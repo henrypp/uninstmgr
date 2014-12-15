@@ -22,20 +22,20 @@
 Global $admin_status, $status_str, $find_text = ""
 
 If @OSArch <> "X86" Then
-	MsgBox(16, "Ошибка ("& StringLower(@OSArch) &")", "Архитектура операционной системы не поддерживается")
+	MsgBox(16, "РћС€РёР±РєР° ("& StringLower(@OSArch) &")", "РђСЂС…РёС‚РµРєС‚СѓСЂР° РѕРїРµСЂР°С†РёРѕРЅРЅРѕР№ СЃРёСЃС‚РµРјС‹ РЅРµ РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ")
 	Exit
 EndIf
 
 If not IsAdmin() Then
 	$admin_status = 0
-	If MsgBox(4 + 32, "Внимание", 'Внимание: "'& @UserName &'" не имеет прав "Администратора"' &@CRLF& 'Продолжить выполнение программы в режиме "Только чтение"?' &@CRLF&@CRLF& 'В режиме "Только чтение" вы не можете:' &@CRLF& '- Деинсталлировать программы' &@CRLF& '- Удалять данные из реестра') = 7 Then Exit
+	If MsgBox(4 + 32, "Р’РЅРёРјР°РЅРёРµ", 'Р’РЅРёРјР°РЅРёРµ: "'& @UserName &'" РЅРµ РёРјРµРµС‚ РїСЂР°РІ "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°"' &@CRLF& 'РџСЂРѕРґРѕР»Р¶РёС‚СЊ РІС‹РїРѕР»РЅРµРЅРёРµ РїСЂРѕРіСЂР°РјРјС‹ РІ СЂРµР¶РёРјРµ "РўРѕР»СЊРєРѕ С‡С‚РµРЅРёРµ"?' &@CRLF&@CRLF& 'Р’ СЂРµР¶РёРјРµ "РўРѕР»СЊРєРѕ С‡С‚РµРЅРёРµ" РІС‹ РЅРµ РјРѕР¶РµС‚Рµ:' &@CRLF& '- Р”РµРёРЅСЃС‚Р°Р»Р»РёСЂРѕРІР°С‚СЊ РїСЂРѕРіСЂР°РјРјС‹' &@CRLF& '- РЈРґР°Р»СЏС‚СЊ РґР°РЅРЅС‹Рµ РёР· СЂРµРµСЃС‚СЂР°') = 7 Then Exit
 Else
 	$admin_status = 1
 EndIf
 
 Global $application = "Uninstall Manager"
 Global $version = "1.50"
-If $admin_status = 0 Then $status_str = " (только чтение)"
+If $admin_status = 0 Then $status_str = " (С‚РѕР»СЊРєРѕ С‡С‚РµРЅРёРµ)"
 Global $homepage = "http://sforce5.narod.ru/uninstmgr"
 Global $projectpage = "http://sourceforge.net/projects/uninstmgr"
 Global $settings_file = @ScriptDir &"\"& StringTrimRight(@ScriptName, 4) &".ini"
@@ -67,67 +67,67 @@ GUISetIcon(@ScriptFullPath, -1, $main_dlg)
 ;Gui ListView
 Global $uninstall_lv = GUICtrlCreateListView("", 0, 0, $win_width, $win_height, $LVS_SORTASCENDING)
 _GUICtrlListView_SetExtendedListViewStyle($uninstall_lv, $LVS_EX_GRIDLINES + $LVS_EX_FULLROWSELECT + $LVS_EX_INFOTIP)
-_GUICtrlListView_AddColumn($uninstall_lv, "Название программы", 200)
-_GUICtrlListView_AddColumn($uninstall_lv, "Издатель", 150)
-_GUICtrlListView_AddColumn($uninstall_lv, "Версия", 80)
-_GUICtrlListView_AddColumn($uninstall_lv, "Комманда удаления", 230)
-_GUICtrlListView_AddColumn($uninstall_lv, "Ключ в реестре", 200)
-_GUICtrlListView_AddColumn($uninstall_lv, "Инсталлятор", 100)
-_GUICtrlListView_AddColumn($uninstall_lv, "Ветка реестра", 100)
-_GUICtrlListView_AddColumn($uninstall_lv, "Дата установки", 100)
+_GUICtrlListView_AddColumn($uninstall_lv, "РќР°Р·РІР°РЅРёРµ РїСЂРѕРіСЂР°РјРјС‹", 200)
+_GUICtrlListView_AddColumn($uninstall_lv, "РР·РґР°С‚РµР»СЊ", 150)
+_GUICtrlListView_AddColumn($uninstall_lv, "Р’РµСЂСЃРёСЏ", 80)
+_GUICtrlListView_AddColumn($uninstall_lv, "РљРѕРјРјР°РЅРґР° СѓРґР°Р»РµРЅРёСЏ", 230)
+_GUICtrlListView_AddColumn($uninstall_lv, "РљР»СЋС‡ РІ СЂРµРµСЃС‚СЂРµ", 200)
+_GUICtrlListView_AddColumn($uninstall_lv, "РРЅСЃС‚Р°Р»Р»СЏС‚РѕСЂ", 100)
+_GUICtrlListView_AddColumn($uninstall_lv, "Р’РµС‚РєР° СЂРµРµСЃС‚СЂР°", 100)
+_GUICtrlListView_AddColumn($uninstall_lv, "Р”Р°С‚Р° СѓСЃС‚Р°РЅРѕРІРєРё", 100)
 
 ;ListView Context Menu
 Global $Dummy = GUICtrlCreateDummy()
 Global $lv_menu = GUICtrlCreateContextMenu($Dummy)
-Global $uninstall_item = GUICtrlCreateMenuItem("Деинсталлировать" &@TAB& "Del", $lv_menu)
-Global $silent_uninstall_item = GUICtrlCreateMenuItem('"Тихая" деинсталляция', $lv_menu)
-Global $modify_item = GUICtrlCreateMenuItem("Восстановить", $lv_menu)
+Global $uninstall_item = GUICtrlCreateMenuItem("Р”РµРёРЅСЃС‚Р°Р»Р»РёСЂРѕРІР°С‚СЊ" &@TAB& "Del", $lv_menu)
+Global $silent_uninstall_item = GUICtrlCreateMenuItem('"РўРёС…Р°СЏ" РґРµРёРЅСЃС‚Р°Р»Р»СЏС†РёСЏ', $lv_menu)
+Global $modify_item = GUICtrlCreateMenuItem("Р’РѕСЃСЃС‚Р°РЅРѕРІРёС‚СЊ", $lv_menu)
 GUICtrlCreateMenuItem("", $lv_menu)
-Global $delete_reg_key_item = GUICtrlCreateMenuItem("Удалить ключ реестра", $lv_menu)
-Global $copy_item = GUICtrlCreateMenuItem("Копировать данные"& @TAB &"Ctrl+C", $lv_menu)
+Global $delete_reg_key_item = GUICtrlCreateMenuItem("РЈРґР°Р»РёС‚СЊ РєР»СЋС‡ СЂРµРµСЃС‚СЂР°", $lv_menu)
+Global $copy_item = GUICtrlCreateMenuItem("РљРѕРїРёСЂРѕРІР°С‚СЊ РґР°РЅРЅС‹Рµ"& @TAB &"Ctrl+C", $lv_menu)
 GUICtrlCreateMenuItem("", $lv_menu)
-Global $open_folder_item = GUICtrlCreateMenuItem("Открыть папку", $lv_menu)
-Global $open_regedit_item = GUICtrlCreateMenuItem("Открыть в реестре", $lv_menu)
-Global $search_google_item = GUICtrlCreateMenuItem("Поиск в Google", $lv_menu)
+Global $open_folder_item = GUICtrlCreateMenuItem("РћС‚РєСЂС‹С‚СЊ РїР°РїРєСѓ", $lv_menu)
+Global $open_regedit_item = GUICtrlCreateMenuItem("РћС‚РєСЂС‹С‚СЊ РІ СЂРµРµСЃС‚СЂРµ", $lv_menu)
+Global $search_google_item = GUICtrlCreateMenuItem("РџРѕРёСЃРє РІ Google", $lv_menu)
 GUICtrlCreateMenuItem("", $lv_menu)
-Global $http_site_item = GUICtrlCreateMenuItem("Открыть страницу программы", $lv_menu)
-Global $http_support_item = GUICtrlCreateMenuItem("Открыть страницу поддержки", $lv_menu)
-Global $http_update_item = GUICtrlCreateMenuItem("Открыть страницу обновления", $lv_menu)
+Global $http_site_item = GUICtrlCreateMenuItem("РћС‚РєСЂС‹С‚СЊ СЃС‚СЂР°РЅРёС†Сѓ РїСЂРѕРіСЂР°РјРјС‹", $lv_menu)
+Global $http_support_item = GUICtrlCreateMenuItem("РћС‚РєСЂС‹С‚СЊ СЃС‚СЂР°РЅРёС†Сѓ РїРѕРґРґРµСЂР¶РєРё", $lv_menu)
+Global $http_update_item = GUICtrlCreateMenuItem("РћС‚РєСЂС‹С‚СЊ СЃС‚СЂР°РЅРёС†Сѓ РѕР±РЅРѕРІР»РµРЅРёСЏ", $lv_menu)
 GUICtrlCreateMenuItem("", $lv_menu)
-Global $properties_item = GUICtrlCreateMenuItem("Свойства" &@TAB& "Enter", $lv_menu)
+Global $properties_item = GUICtrlCreateMenuItem("РЎРІРѕР№СЃС‚РІР°" &@TAB& "Enter", $lv_menu)
 Global $hMenu = GUICtrlGetHandle($lv_menu)
 
 ;Gui Menu
-Global $file_menu = GUICtrlCreateMenu("Файл")
-Global $refresh_item = GUICtrlCreateMenuItem("Обновить"& @TAB &"F5", $file_menu)
-Global $exit_item = GUICtrlCreateMenuItem("Выйти"& @TAB &"Esc", $file_menu)
-Global $edit_menu = GUICtrlCreateMenu("Правка")
-Global $copy_2_item = GUICtrlCreateMenuItem("Копировать"& @TAB &"Ctrl+C", $edit_menu)
-Global $select_all_item = GUICtrlCreateMenuItem("Выделить всё"& @TAB &"Ctrl+A", $edit_menu)
+Global $file_menu = GUICtrlCreateMenu("Р¤Р°Р№Р»")
+Global $refresh_item = GUICtrlCreateMenuItem("РћР±РЅРѕРІРёС‚СЊ"& @TAB &"F5", $file_menu)
+Global $exit_item = GUICtrlCreateMenuItem("Р’С‹Р№С‚Рё"& @TAB &"Esc", $file_menu)
+Global $edit_menu = GUICtrlCreateMenu("РџСЂР°РІРєР°")
+Global $copy_2_item = GUICtrlCreateMenuItem("РљРѕРїРёСЂРѕРІР°С‚СЊ"& @TAB &"Ctrl+C", $edit_menu)
+Global $select_all_item = GUICtrlCreateMenuItem("Р’С‹РґРµР»РёС‚СЊ РІСЃС‘"& @TAB &"Ctrl+A", $edit_menu)
 GUICtrlCreateMenuItem("", $edit_menu)
-Global $find_item = GUICtrlCreateMenuItem("Найти..."& @TAB &"Ctrl+F", $edit_menu)
-Global $find_next_item = GUICtrlCreateMenuItem("Найти далее"& @TAB &"F3", $edit_menu)
-Global $view_menu = GUICtrlCreateMenu("Вид")
-Global $view_details_item = GUICtrlCreateMenuItem("Детали", $view_menu, 0, 1)
-Global $view_icons_item = GUICtrlCreateMenuItem("Значки", $view_menu, 0, 1)
-Global $view_list_item = GUICtrlCreateMenuItem("Список", $view_menu, 0, 1)
+Global $find_item = GUICtrlCreateMenuItem("РќР°Р№С‚Рё..."& @TAB &"Ctrl+F", $edit_menu)
+Global $find_next_item = GUICtrlCreateMenuItem("РќР°Р№С‚Рё РґР°Р»РµРµ"& @TAB &"F3", $edit_menu)
+Global $view_menu = GUICtrlCreateMenu("Р’РёРґ")
+Global $view_details_item = GUICtrlCreateMenuItem("Р”РµС‚Р°Р»Рё", $view_menu, 0, 1)
+Global $view_icons_item = GUICtrlCreateMenuItem("Р—РЅР°С‡РєРё", $view_menu, 0, 1)
+Global $view_list_item = GUICtrlCreateMenuItem("РЎРїРёСЃРѕРє", $view_menu, 0, 1)
 GUICtrlCreateMenuItem("", $view_menu)
-Global $auto_size_column_width_item = GUICtrlCreateMenuItem("Выровнять ширину колонок", $view_menu)
-Global $tools_menu = GUICtrlCreateMenu("Инструменты")
-Global $backup_item = GUICtrlCreateMenuItem("Сохранить раздел реестра (Uninstall)", $tools_menu)
-Global $html_item = GUICtrlCreateMenuItem("Сохранить список в отчёт (HTML)", $tools_menu)
-Global $options_menu = GUICtrlCreateMenu("Параметры")
-Global $show_icons_item = GUICtrlCreateMenuItem("Загружать значки", $options_menu)
-Global $show_updates_item = GUICtrlCreateMenuItem("Показывать обновления", $options_menu)
-Global $show_components_item = GUICtrlCreateMenuItem("Показывать системные компоненты", $options_menu)
-Global $show_incorrect_item = GUICtrlCreateMenuItem("Показывать неудаляемые элементы", $options_menu)
+Global $auto_size_column_width_item = GUICtrlCreateMenuItem("Р’С‹СЂРѕРІРЅСЏС‚СЊ С€РёСЂРёРЅСѓ РєРѕР»РѕРЅРѕРє", $view_menu)
+Global $tools_menu = GUICtrlCreateMenu("РРЅСЃС‚СЂСѓРјРµРЅС‚С‹")
+Global $backup_item = GUICtrlCreateMenuItem("РЎРѕС…СЂР°РЅРёС‚СЊ СЂР°Р·РґРµР» СЂРµРµСЃС‚СЂР° (Uninstall)", $tools_menu)
+Global $html_item = GUICtrlCreateMenuItem("РЎРѕС…СЂР°РЅРёС‚СЊ СЃРїРёСЃРѕРє РІ РѕС‚С‡С‘С‚ (HTML)", $tools_menu)
+Global $options_menu = GUICtrlCreateMenu("РџР°СЂР°РјРµС‚СЂС‹")
+Global $show_icons_item = GUICtrlCreateMenuItem("Р—Р°РіСЂСѓР¶Р°С‚СЊ Р·РЅР°С‡РєРё", $options_menu)
+Global $show_updates_item = GUICtrlCreateMenuItem("РџРѕРєР°Р·С‹РІР°С‚СЊ РѕР±РЅРѕРІР»РµРЅРёСЏ", $options_menu)
+Global $show_components_item = GUICtrlCreateMenuItem("РџРѕРєР°Р·С‹РІР°С‚СЊ СЃРёСЃС‚РµРјРЅС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚С‹", $options_menu)
+Global $show_incorrect_item = GUICtrlCreateMenuItem("РџРѕРєР°Р·С‹РІР°С‚СЊ РЅРµСѓРґР°Р»СЏРµРјС‹Рµ СЌР»РµРјРµРЅС‚С‹", $options_menu)
 GUICtrlCreateMenuItem("", $options_menu)
-Global $settings_item = GUICtrlCreateMenuItem("Настройки", $options_menu)
-Global $help_menu = GUICtrlCreateMenu("Помощь")
-Global $homepage_item = GUICtrlCreateMenuItem("Сайт программы", $help_menu)
-Global $projectpage_item = GUICtrlCreateMenuItem("Страница проекта (sf.net)", $help_menu)
-Global $check_update_item = GUICtrlCreateMenuItem("Проверить обновления", $help_menu)
-Global $about_item = GUICtrlCreateMenuItem("О программе", $help_menu)
+Global $settings_item = GUICtrlCreateMenuItem("РќР°СЃС‚СЂРѕР№РєРё", $options_menu)
+Global $help_menu = GUICtrlCreateMenu("РџРѕРјРѕС‰СЊ")
+Global $homepage_item = GUICtrlCreateMenuItem("РЎР°Р№С‚ РїСЂРѕРіСЂР°РјРјС‹", $help_menu)
+Global $projectpage_item = GUICtrlCreateMenuItem("РЎС‚СЂР°РЅРёС†Р° РїСЂРѕРµРєС‚Р° (sf.net)", $help_menu)
+Global $check_update_item = GUICtrlCreateMenuItem("РџСЂРѕРІРµСЂРёС‚СЊ РѕР±РЅРѕРІР»РµРЅРёСЏ", $help_menu)
+Global $about_item = GUICtrlCreateMenuItem("Рћ РїСЂРѕРіСЂР°РјРјРµ", $help_menu)
 
 Global $set_view = IniRead($settings_file, "settings", "ViewMode", 0)
 _GUICtrlListView_SetView($uninstall_lv, $set_view)
@@ -206,7 +206,7 @@ While 1
 				If $selected[0] <> 0 Then
 					$iFind = _GUICtrlListView_FindInText($uninstall_lv, $find_text, $selected[1], 0)
 					If $iFind = -1 Then
-						MsgBox(64, "Поиск", "Поиск завершён", 0, $main_dlg)
+						MsgBox(64, "РџРѕРёСЃРє", "РџРѕРёСЃРє Р·Р°РІРµСЂС€С‘РЅ", 0, $main_dlg)
 					Else
 						_GUICtrlListView_ClickItem($uninstall_lv, $iFind)
 					EndIf
@@ -221,7 +221,7 @@ While 1
 		Case $check_update_item
 			_CheckForUpdate()
 		Case $about_item
-			MsgBox(64, "О программе", $application &" "& $version &@CRLF& "Copyright © 2010 [Nuker-Hoax]" &@CRLF&@CRLF& "Благодарности:" &@CRLF& "Mr.Creator, Yashied, Jarvis Stubblefield, Bob Anthony" &@CRLF& "Rajesh V R, Suppir, Kaster, amel27, engine, Vendor" &@CRLF&@CRLF& "За Tablecloth (CSS) спасибо Css Globe (www.cssglobe.com)" &@CRLF&@CRLF& "Эта программа бесплатна и распространяется" &@CRLF& "под лицензией GNU General Public License." &@CRLF&@CRLF& $homepage, 0, $main_dlg)
+			MsgBox(64, "Рћ РїСЂРѕРіСЂР°РјРјРµ", $application &" "& $version &@CRLF& "Copyright В© 2010 [Nuker-Hoax]" &@CRLF&@CRLF& "Р‘Р»Р°РіРѕРґР°СЂРЅРѕСЃС‚Рё:" &@CRLF& "Mr.Creator, Yashied, Jarvis Stubblefield, Bob Anthony" &@CRLF& "Rajesh V R, Suppir, Kaster, amel27, engine, Vendor" &@CRLF&@CRLF& "Р—Р° Tablecloth (CSS) СЃРїР°СЃРёР±Рѕ Css Globe (www.cssglobe.com)" &@CRLF&@CRLF& "Р­С‚Р° РїСЂРѕРіСЂР°РјРјР° Р±РµСЃРїР»Р°С‚РЅР° Рё СЂР°СЃРїСЂРѕСЃС‚СЂР°РЅСЏРµС‚СЃСЏ" &@CRLF& "РїРѕРґ Р»РёС†РµРЅР·РёРµР№ GNU General Public License." &@CRLF&@CRLF& $homepage, 0, $main_dlg)
 		Case $uninstall_item
 			Local $request = 6
 			Local $selected = _GUICtrlListView_GetSelectedIndices($uninstall_lv, True)
@@ -237,7 +237,7 @@ While 1
 				Next
 				If $program_list <> "" Then
 				If $selected[0] > 30 Then $program_list = ""
-					If $request_delete_option = 1 Then $request = MsgBox(4 + 32, "Внимание", "Вы действительно хотите удалить выбранные программы с компьютера ("& $selected[0] &") ?" &@CRLF&@CRLF& $program_list, 0, $main_dlg)
+					If $request_delete_option = 1 Then $request = MsgBox(4 + 32, "Р’РЅРёРјР°РЅРёРµ", "Р’С‹ РґРµР№СЃС‚РІРёС‚РµР»СЊРЅРѕ С…РѕС‚РёС‚Рµ СѓРґР°Р»РёС‚СЊ РІС‹Р±СЂР°РЅРЅС‹Рµ РїСЂРѕРіСЂР°РјРјС‹ СЃ РєРѕРјРїСЊСЋС‚РµСЂР° ("& $selected[0] &") ?" &@CRLF&@CRLF& $program_list, 0, $main_dlg)
 						If $request = 6 Then
 							GUISetState(@SW_MINIMIZE)
 							For $i = 1 to $selected[0]
@@ -260,7 +260,7 @@ While 1
 			Local $selected = _GUICtrlListView_GetSelectionMark($uninstall_lv)
 			If $selected <> -1 Then
 				Local $together =_GUICtrlListView_GetItemTextArray($uninstall_lv, $selected)
-				If MsgBox(4 + 32, "Внимание", "Вы действительно хотите восстановить "& $together[1] &" ?", 0, $main_dlg) = 6 Then
+				If MsgBox(4 + 32, "Р’РЅРёРјР°РЅРёРµ", "Р’С‹ РґРµР№СЃС‚РІРёС‚РµР»СЊРЅРѕ С…РѕС‚РёС‚Рµ РІРѕСЃСЃС‚Р°РЅРѕРІРёС‚СЊ "& $together[1] &" ?", 0, $main_dlg) = 6 Then
 					Local $ModifyPath = RegRead($together[7] &"\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\"& $together[5], "ModifyPath")
 
 					GUISetState(@SW_MINIMIZE)
@@ -278,7 +278,7 @@ While 1
 			Local $selected = _GUICtrlListView_GetSelectionMark($uninstall_lv)
 			If $selected <> -1 Then
 				Local $together =_GUICtrlListView_GetItemTextArray($uninstall_lv, $selected)
-				If MsgBox(4 + 32, "Внимание", "Вы действительно хотите деинсталлировать "& $together[1] &" ?", 0, $main_dlg) = 6 Then
+				If MsgBox(4 + 32, "Р’РЅРёРјР°РЅРёРµ", "Р’С‹ РґРµР№СЃС‚РІРёС‚РµР»СЊРЅРѕ С…РѕС‚РёС‚Рµ РґРµРёРЅСЃС‚Р°Р»Р»РёСЂРѕРІР°С‚СЊ "& $together[1] &" ?", 0, $main_dlg) = 6 Then
 					Local $UninstallString = RegRead($together[7] &"\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\"& $together[5], "UninstallString")
 					Local $QuietUninstallString = RegRead($together[7] &"\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\"& $together[5], "QuietUninstallString")
 					Local $WindowsInstaller = RegRead($together[7] &"\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\"& $together[5], "WindowsInstaller")
@@ -337,15 +337,15 @@ While 1
 					$program_list &= $i &") "& $get_array_1[1] &@CRLF& $together[7] &"\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\"&$get_array_1[5] &@CRLF&@CRLF
 				Next
 				If $selected[0] > 15 Then $program_list = ""
-				If MsgBox(4 + 32, "Внимание", "Вы действительно хотите удалить данные из реестра ("& $selected[0] &") ?" &@CRLF&@CRLF& $program_list, 0, $main_dlg) = 6 Then
+				If MsgBox(4 + 32, "Р’РЅРёРјР°РЅРёРµ", "Р’С‹ РґРµР№СЃС‚РІРёС‚РµР»СЊРЅРѕ С…РѕС‚РёС‚Рµ СѓРґР°Р»РёС‚СЊ РґР°РЅРЅС‹Рµ РёР· СЂРµРµСЃС‚СЂР° ("& $selected[0] &") ?" &@CRLF&@CRLF& $program_list, 0, $main_dlg) = 6 Then
 					Local $error_text = ""
 					For $i = 1 to $selected[0]
 						Local $get_array_2 =_GUICtrlListView_GetItemTextArray($uninstall_lv, $selected[$i])
 						Local $reg_del = RegDelete($get_array_2[7] &"\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\"&$get_array_2[5])
-						If $reg_del = 0 Then $error_text &= "Ключ не существует: "& $get_array_2[7] &"\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\"&$get_array_2[5] &@CRLF
-						If $reg_del = 2 Then $error_text &= "Ошибка при удалении: "& $get_array_2[7] &"\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\"&$get_array_2[5] &@CRLF
+						If $reg_del = 0 Then $error_text &= "РљР»СЋС‡ РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚: "& $get_array_2[7] &"\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\"&$get_array_2[5] &@CRLF
+						If $reg_del = 2 Then $error_text &= "РћС€РёР±РєР° РїСЂРё СѓРґР°Р»РµРЅРёРё: "& $get_array_2[7] &"\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\"&$get_array_2[5] &@CRLF
 					Next
-					If StringLen($error_text) > 0 Then MsgBox(16, "Ошибки", "При выполнении операций произошли следующие ошибки:" &@CRLF&@CRLF& $error_text, 0, $main_dlg)
+					If StringLen($error_text) > 0 Then MsgBox(16, "РћС€РёР±РєРё", "РџСЂРё РІС‹РїРѕР»РЅРµРЅРёРё РѕРїРµСЂР°С†РёР№ РїСЂРѕРёР·РѕС€Р»Рё СЃР»РµРґСѓСЋС‰РёРµ РѕС€РёР±РєРё:" &@CRLF&@CRLF& $error_text, 0, $main_dlg)
 					_GenerateUninstallList("HKEY_LOCAL_MACHINE")
 					If $show_hkcu_option = 1 Then _GenerateUninstallList("HKEY_CURRENT_USER")
 					For $a = 1 to $selected[0]
@@ -361,7 +361,7 @@ While 1
 				For $i = 1 to $selected[0]
 					Local $together =_GUICtrlListView_GetItemTextArray($uninstall_lv, $selected[$i])
 					If $together[0] <> 0 Then
-						$copy_text &= "Название программы: " &@TAB& $together[1] &@CRLF& "Издатель: " &@TAB&@TAB& $together[2] &@CRLF& "Версия: " &@TAB&@TAB& $together[3] &@CRLF& "Комманда удаления: " &@TAB& $together[4] &@CRLF& "Ключ в реестре: " &@TAB& $together[5] &@CRLF& "Инсталлятор: " &@TAB&@TAB& $together[6] &@CRLF& "Ветка реестра: " &@TAB&@TAB& $together[7] &@CRLF& "Дата установки: " &@TAB& $together[8] &@CRLF&@CRLF
+						$copy_text &= "РќР°Р·РІР°РЅРёРµ РїСЂРѕРіСЂР°РјРјС‹: " &@TAB& $together[1] &@CRLF& "РР·РґР°С‚РµР»СЊ: " &@TAB&@TAB& $together[2] &@CRLF& "Р’РµСЂСЃРёСЏ: " &@TAB&@TAB& $together[3] &@CRLF& "РљРѕРјРјР°РЅРґР° СѓРґР°Р»РµРЅРёСЏ: " &@TAB& $together[4] &@CRLF& "РљР»СЋС‡ РІ СЂРµРµСЃС‚СЂРµ: " &@TAB& $together[5] &@CRLF& "РРЅСЃС‚Р°Р»Р»СЏС‚РѕСЂ: " &@TAB&@TAB& $together[6] &@CRLF& "Р’РµС‚РєР° СЂРµРµСЃС‚СЂР°: " &@TAB&@TAB& $together[7] &@CRLF& "Р”Р°С‚Р° СѓСЃС‚Р°РЅРѕРІРєРё: " &@TAB& $together[8] &@CRLF&@CRLF
 					EndIf
 				Next
 				
@@ -449,7 +449,7 @@ While 1
 				_GUICtrlListView_SetItemSelected($uninstall_lv, $selected)
 			EndIf
 		Case $backup_item
-			Local $reg_file = FileSaveDialog("Выберите файл для сохранения...", "", "Файл реестра (*.reg)", 16, "uninstall_" &@MDAY &"_"& @MON&"_"& @YEAR, $main_dlg)
+			Local $reg_file = FileSaveDialog("Р’С‹Р±РµСЂРёС‚Рµ С„Р°Р№Р» РґР»СЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ...", "", "Р¤Р°Р№Р» СЂРµРµСЃС‚СЂР° (*.reg)", 16, "uninstall_" &@MDAY &"_"& @MON&"_"& @YEAR, $main_dlg)
 			If @error = 0 Then
 				Local $sFile = $reg_file &".reg"
 				FileDelete($sFile)
@@ -458,14 +458,14 @@ While 1
 		Case $html_item
 			Local $iCount = _GUICtrlListView_GetItemCount($uninstall_lv)
 			If ($iCount - 1) = 0 Then 
-				MsgBox(16, "Ошибка", "Нет данных для сохранения отчёта", 0, $main_dlg)
+				MsgBox(16, "РћС€РёР±РєР°", "РќРµС‚ РґР°РЅРЅС‹С… РґР»СЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ РѕС‚С‡С‘С‚Р°", 0, $main_dlg)
 			Else
-				Local $html_file = FileSaveDialog("Выберите файл для сохранения...", "", "HTML файлы (*.html)", 16, "report_" &@MDAY &"_"& @MON&"_"& @YEAR, $main_dlg)
+				Local $html_file = FileSaveDialog("Р’С‹Р±РµСЂРёС‚Рµ С„Р°Р№Р» РґР»СЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ...", "", "HTML С„Р°Р№Р»С‹ (*.html)", 16, "report_" &@MDAY &"_"& @MON&"_"& @YEAR, $main_dlg)
 				If @error = 0 Then
 					Local $sFile = $html_file &".html"
 					FileDelete($sFile)
 					FileWrite($sFile, _GenerateHTMLReport())
-					If MsgBox(4 + 32, "Сохранено", "Отчёт сохранён, вы хотите его открыть?" &@CRLF&@CRLF& _WinAPI_PathCompactPath(0, $sFile, 400), -1, $main_dlg) = 6 Then ShellExecute($sFile)
+					If MsgBox(4 + 32, "РЎРѕС…СЂР°РЅРµРЅРѕ", "РћС‚С‡С‘С‚ СЃРѕС…СЂР°РЅС‘РЅ, РІС‹ С…РѕС‚РёС‚Рµ РµРіРѕ РѕС‚РєСЂС‹С‚СЊ?" &@CRLF&@CRLF& _WinAPI_PathCompactPath(0, $sFile, 400), -1, $main_dlg) = 6 Then ShellExecute($sFile)
 				EndIf
 			EndIf
 		Case $show_icons_item
@@ -582,9 +582,9 @@ Func _CheckForUpdate($iStartupCheck = 0)
 	FileDelete(@ScriptDir &"\update.dat")
 	
 	If $new_ver <> $version Then
-		If MsgBox(4 + 32, "Обновление", "Доступная новая версия "& $new_ver &@CRLF &"Вы хотите открыть сайт программы для скачивания новой версии?", 0, $main_dlg) = 6 Then ShellExecute($homepage)
+		If MsgBox(4 + 32, "РћР±РЅРѕРІР»РµРЅРёРµ", "Р”РѕСЃС‚СѓРїРЅР°СЏ РЅРѕРІР°СЏ РІРµСЂСЃРёСЏ "& $new_ver &@CRLF &"Р’С‹ С…РѕС‚РёС‚Рµ РѕС‚РєСЂС‹С‚СЊ СЃР°Р№С‚ РїСЂРѕРіСЂР°РјРјС‹ РґР»СЏ СЃРєР°С‡РёРІР°РЅРёСЏ РЅРѕРІРѕР№ РІРµСЂСЃРёРё?", 0, $main_dlg) = 6 Then ShellExecute($homepage)
 	Else
-		If $iStartupCheck = 0 Then MsgBox(64, "Обновление", "Нет доступных обновлений", 0, $main_dlg)
+		If $iStartupCheck = 0 Then MsgBox(64, "РћР±РЅРѕРІР»РµРЅРёРµ", "РќРµС‚ РґРѕСЃС‚СѓРїРЅС‹С… РѕР±РЅРѕРІР»РµРЅРёР№", 0, $main_dlg)
 	EndIf
 EndFunc
 
@@ -648,11 +648,11 @@ Func _GenerateUninstallList($sRoot = "HKEY_LOCAL_MACHINE", $iShow = 0, $hWnd = $
 		$iTop = ($aPos[3] - $iHeight) / 2 + $aPos[1] - 20
 	EndIf
 
-	Local $status_dlg = GUICreate("Загрузка...", $iWidth, $iHeight, $iLeft, $iTop, $WS_POPUP + $WS_BORDER, -1, $hWnd)
+	Local $status_dlg = GUICreate("Р—Р°РіСЂСѓР·РєР°...", $iWidth, $iHeight, $iLeft, $iTop, $WS_POPUP + $WS_BORDER, -1, $hWnd)
 	WinSetOnTop($status_dlg, "", 1)
 	
 	GUICtrlCreateIcon(@ScriptFullPath, -1, 15, 15, 32, 32)
-	GUICtrlCreateLabel("Обработка:", 64, 15, 62, 17)
+	GUICtrlCreateLabel("РћР±СЂР°Р±РѕС‚РєР°:", 64, 15, 62, 17)
 	Local $status_label = GUICtrlCreateLabel("", 64, 30, 270, 17)
 	Local $status_progress = GUICtrlCreateProgress(15, 58, 322, 17)
 	
@@ -687,8 +687,8 @@ Func _GenerateUninstallList($sRoot = "HKEY_LOCAL_MACHINE", $iShow = 0, $hWnd = $
 	For $i = 0 To UBound($aKey) - 1
 		Local $AppKey = _WinAPI_RegEnumKey($hKey, $i)
 		
-		_GUICtrlStatusBar_SetText($main_status, "Всего программ: "& _GUICtrlListView_GetItemCount($uninstall_lv), 0)
-		_GUICtrlStatusBar_SetText($main_status, "Обработка ключа: "& $AppKey, 1)
+		_GUICtrlStatusBar_SetText($main_status, "Р’СЃРµРіРѕ РїСЂРѕРіСЂР°РјРј: "& _GUICtrlListView_GetItemCount($uninstall_lv), 0)
+		_GUICtrlStatusBar_SetText($main_status, "РћР±СЂР°Р±РѕС‚РєР° РєР»СЋС‡Р°: "& $AppKey, 1)
 
         Local $aName = StringStripWS(RegRead($UnInstKey &"\"& $AppKey, "DisplayName"), 3)
 		
@@ -755,7 +755,7 @@ Func _GenerateUninstallList($sRoot = "HKEY_LOCAL_MACHINE", $iShow = 0, $hWnd = $
 	
 	_GUICtrlListView_EndUpdate($uninstall_lv)
 		
-	_GUICtrlStatusBar_SetText($main_status, "Всего программ: "& _GUICtrlListView_GetItemCount($uninstall_lv), 0)
+	_GUICtrlStatusBar_SetText($main_status, "Р’СЃРµРіРѕ РїСЂРѕРіСЂР°РјРј: "& _GUICtrlListView_GetItemCount($uninstall_lv), 0)
 	_GUICtrlStatusBar_SetText($main_status, "", 1)
 	
 	GUIDelete($status_dlg)
@@ -782,75 +782,75 @@ Func _SettingsDlg($hWnd = 0)
 		$iTop = ($aPos[3] - $iHeight) / 2 + $aPos[1] - 20
 	EndIf
 
-	Local $settings_dlg = GUICreate("Настройки", $iWidth, $iHeight, $iLeft, $iTop, $WS_CAPTION + $WS_SYSMENU, $WS_EX_DLGMODALFRAME, $hWnd)
+	Local $settings_dlg = GUICreate("РќР°СЃС‚СЂРѕР№РєРё", $iWidth, $iHeight, $iLeft, $iTop, $WS_CAPTION + $WS_SYSMENU, $WS_EX_DLGMODALFRAME, $hWnd)
 	Local $hIcon = _WinAPI_GetClassLong($settings_dlg, $GCL_HICON)
 	_WinAPI_DestroyIcon($hIcon)
 	_WinAPI_SetClassLong($settings_dlg, $GCL_HICON, 0)
 	_WinAPI_SetClassLong($settings_dlg, $GCL_HICONSM, 0)
 
-	Local $save_btn = GUICtrlCreateButton("Сохранить", 246, 224, 75, 25, -1, $WS_EX_STATICEDGE)
+	Local $save_btn = GUICtrlCreateButton("РЎРѕС…СЂР°РЅРёС‚СЊ", 246, 224, 75, 25, -1, $WS_EX_STATICEDGE)
 	DllCall("UxTheme.dll", "int", "SetWindowTheme", "hwnd", GUICtrlGetHandle(-1), "wstr", "", "wstr", "")
 	GUICtrlSetState(-1, $GUI_DEFBUTTON)
 	
-	Local $cancel_btn = GUICtrlCreateButton("Закрыть", 326, 224, 75, 25, -1, $WS_EX_STATICEDGE)
+	Local $cancel_btn = GUICtrlCreateButton("Р—Р°РєСЂС‹С‚СЊ", 326, 224, 75, 25, -1, $WS_EX_STATICEDGE)
 	DllCall("UxTheme.dll", "int", "SetWindowTheme", "hwnd", GUICtrlGetHandle(-1), "wstr", "", "wstr", "")
 
 	Local $main_tab = GUICtrlCreateTab(10, 10, 393, 201)
 
-	Local $main_tab_item = GUICtrlCreateTabItem("Основные")
+	Local $main_tab_item = GUICtrlCreateTabItem("РћСЃРЅРѕРІРЅС‹Рµ")
 
 	GUICtrlCreateGroup("", 21, 37, 370, 161)
 	DllCall("UxTheme.dll", "int", "SetWindowTheme", "hwnd", GUICtrlGetHandle(-1), "wstr", "", "wstr", "")
 
-	Local $check_updates_at_startup_chk = GUICtrlCreateCheckbox("Проверять обновления при запуске", 35, 55, 330, 20)
+	Local $check_updates_at_startup_chk = GUICtrlCreateCheckbox("РџСЂРѕРІРµСЂСЏС‚СЊ РѕР±РЅРѕРІР»РµРЅРёСЏ РїСЂРё Р·Р°РїСѓСЃРєРµ", 35, 55, 330, 20)
 	If $check_updates_at_startup_option = 1 Then GuiCtrlSetState(-1, $GUI_CHECKED)
 		
-	Local $show_loading_dialog_chk = GUICtrlCreateCheckbox("Показывать окно загрузки данных из реестра при запуске", 35, 75, 330, 20)
+	Local $show_loading_dialog_chk = GUICtrlCreateCheckbox("РџРѕРєР°Р·С‹РІР°С‚СЊ РѕРєРЅРѕ Р·Р°РіСЂСѓР·РєРё РґР°РЅРЅС‹С… РёР· СЂРµРµСЃС‚СЂР° РїСЂРё Р·Р°РїСѓСЃРєРµ", 35, 75, 330, 20)
 	If $show_loading_dialog_option = 1 Then GuiCtrlSetState(-1, $GUI_CHECKED)
 		
-	Local $remember_widow_position_chk = GUICtrlCreateCheckbox("Запоминать положение окна программы", 35, 95, 330, 20)
+	Local $remember_widow_position_chk = GUICtrlCreateCheckbox("Р—Р°РїРѕРјРёРЅР°С‚СЊ РїРѕР»РѕР¶РµРЅРёРµ РѕРєРЅР° РїСЂРѕРіСЂР°РјРјС‹", 35, 95, 330, 20)
 	If $remember_widow_position_option = 1 Then GuiCtrlSetState(-1, $GUI_CHECKED)
 	
-	Local $request_delete_chk = GUICtrlCreateCheckbox("Запрашивать подтверждение на удаление программ", 35, 115, 330, 20)
+	Local $request_delete_chk = GUICtrlCreateCheckbox("Р—Р°РїСЂР°С€РёРІР°С‚СЊ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ РЅР° СѓРґР°Р»РµРЅРёРµ РїСЂРѕРіСЂР°РјРј", 35, 115, 330, 20)
 	If $request_delete_option = 1 Then GuiCtrlSetState(-1, $GUI_CHECKED)
 
-	Local $list_tab_item = GUICtrlCreateTabItem("Список")
+	Local $list_tab_item = GUICtrlCreateTabItem("РЎРїРёСЃРѕРє")
 	GUICtrlCreateGroup("", 21, 37, 370, 161)
 	DllCall("UxTheme.dll", "int", "SetWindowTheme", "hwnd", GUICtrlGetHandle(-1), "wstr", "", "wstr", "")
 
-	Local $show_icons_chk = GUICtrlCreateCheckbox("Загружать значки элементов", 35, 55, 330, 20)
+	Local $show_icons_chk = GUICtrlCreateCheckbox("Р—Р°РіСЂСѓР¶Р°С‚СЊ Р·РЅР°С‡РєРё СЌР»РµРјРµРЅС‚РѕРІ", 35, 55, 330, 20)
 	If $show_application_icon_option = 1 Then GuiCtrlSetState(-1, $GUI_CHECKED)
 	
-	Local $show_update_chk = GUICtrlCreateCheckbox("Показывать установленные обновления", 35, 75, 330, 20)
+	Local $show_update_chk = GUICtrlCreateCheckbox("РџРѕРєР°Р·С‹РІР°С‚СЊ СѓСЃС‚Р°РЅРѕРІР»РµРЅРЅС‹Рµ РѕР±РЅРѕРІР»РµРЅРёСЏ", 35, 75, 330, 20)
 	If $show_updates_option = 1 Then GuiCtrlSetState(-1, $GUI_CHECKED)
 	
-	Local $show_components_chk = GUICtrlCreateCheckbox("Показывать системные компоненты", 35, 95, 330, 20)
+	Local $show_components_chk = GUICtrlCreateCheckbox("РџРѕРєР°Р·С‹РІР°С‚СЊ СЃРёСЃС‚РµРјРЅС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚С‹", 35, 95, 330, 20)
 	If $show_components_option = 1 Then GuiCtrlSetState(-1, $GUI_CHECKED)
 	
-	Local $show_incorrect_chk = GUICtrlCreateCheckbox("Показывать неудаляемые элементы", 35, 115, 330, 20)
+	Local $show_incorrect_chk = GUICtrlCreateCheckbox("РџРѕРєР°Р·С‹РІР°С‚СЊ РЅРµСѓРґР°Р»СЏРµРјС‹Рµ СЌР»РµРјРµРЅС‚С‹", 35, 115, 330, 20)
 	If $show_incorrect_option = 1 Then GuiCtrlSetState(-1, $GUI_CHECKED)
 		
-	Local $show_freename_chk = GUICtrlCreateCheckbox("Показывать элементы с пустым именем", 35, 135, 330, 20)
+	Local $show_freename_chk = GUICtrlCreateCheckbox("РџРѕРєР°Р·С‹РІР°С‚СЊ СЌР»РµРјРµРЅС‚С‹ СЃ РїСѓСЃС‚С‹Рј РёРјРµРЅРµРј", 35, 135, 330, 20)
 	If $show_freename_option = 1 Then GuiCtrlSetState(-1, $GUI_CHECKED)
 		
-	Local $show_hkcu_chk = GUICtrlCreateCheckbox("Обрабатывать ветку реестра из HKCU", 35, 155, 330, 20)
+	Local $show_hkcu_chk = GUICtrlCreateCheckbox("РћР±СЂР°Р±Р°С‚С‹РІР°С‚СЊ РІРµС‚РєСѓ СЂРµРµСЃС‚СЂР° РёР· HKCU", 35, 155, 330, 20)
 	If $show_hkcu_option = 1 Then GuiCtrlSetState(-1, $GUI_CHECKED)
 
-	Local $highlighting_tab_item = GUICtrlCreateTabItem("Подсветка")
+	Local $highlighting_tab_item = GUICtrlCreateTabItem("РџРѕРґСЃРІРµС‚РєР°")
 	GUICtrlCreateGroup("", 21, 37, 370, 161)
 	DllCall("UxTheme.dll", "int", "SetWindowTheme", "hwnd", GUICtrlGetHandle(-1), "wstr", "", "wstr", "")
 
-	Local $allow_highlighting_chk = GUICtrlCreateCheckbox('Разрешить подсветку "особых" элементов', 35, 55, 330, 20)
+	Local $allow_highlighting_chk = GUICtrlCreateCheckbox('Р Р°Р·СЂРµС€РёС‚СЊ РїРѕРґСЃРІРµС‚РєСѓ "РѕСЃРѕР±С‹С…" СЌР»РµРјРµРЅС‚РѕРІ', 35, 55, 330, 20)
 	If $allow_highlighting_option = 1 Then GuiCtrlSetState(-1, $GUI_CHECKED)
 
-	GUICtrlCreateLabel("Обновления:", 35, 85, 140, 25, $SS_CENTERIMAGE)
-	Local $updates_color_btn = _GUIColorPicker_Create("", 200, 85, 70, 25, $color_updates_option, $CP_FLAG_DEFAULT + $CP_FLAG_ARROWSTYLE + $CP_FLAG_TIP, -1, -1, -1, -1, "", "Изменить")
+	GUICtrlCreateLabel("РћР±РЅРѕРІР»РµРЅРёСЏ:", 35, 85, 140, 25, $SS_CENTERIMAGE)
+	Local $updates_color_btn = _GUIColorPicker_Create("", 200, 85, 70, 25, $color_updates_option, $CP_FLAG_DEFAULT + $CP_FLAG_ARROWSTYLE + $CP_FLAG_TIP, -1, -1, -1, -1, "", "РР·РјРµРЅРёС‚СЊ")
 
-	GUICtrlCreateLabel("Системные компоненты:", 35, 115, 140, 25, $SS_CENTERIMAGE)
-	Local $components_color_btn = _GUIColorPicker_Create("", 200, 115, 70, 25, $color_components_option, $CP_FLAG_DEFAULT + $CP_FLAG_ARROWSTYLE + $CP_FLAG_TIP, -1, -1, -1, -1, "", "Изменить")
+	GUICtrlCreateLabel("РЎРёСЃС‚РµРјРЅС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚С‹:", 35, 115, 140, 25, $SS_CENTERIMAGE)
+	Local $components_color_btn = _GUIColorPicker_Create("", 200, 115, 70, 25, $color_components_option, $CP_FLAG_DEFAULT + $CP_FLAG_ARROWSTYLE + $CP_FLAG_TIP, -1, -1, -1, -1, "", "РР·РјРµРЅРёС‚СЊ")
 
-	GUICtrlCreateLabel("Неудаляемые элементы:", 35, 145, 140, 25, $SS_CENTERIMAGE)
-	Local $incorrect_color_btn = _GUIColorPicker_Create("", 200, 145, 70, 25, $color_incorrect_option, $CP_FLAG_DEFAULT + $CP_FLAG_ARROWSTYLE + $CP_FLAG_TIP, -1, -1, -1, -1, "", "Изменить")
+	GUICtrlCreateLabel("РќРµСѓРґР°Р»СЏРµРјС‹Рµ СЌР»РµРјРµРЅС‚С‹:", 35, 145, 140, 25, $SS_CENTERIMAGE)
+	Local $incorrect_color_btn = _GUIColorPicker_Create("", 200, 145, 70, 25, $color_incorrect_option, $CP_FLAG_DEFAULT + $CP_FLAG_ARROWSTYLE + $CP_FLAG_TIP, -1, -1, -1, -1, "", "РР·РјРµРЅРёС‚СЊ")
 	
 	GUISetState(@SW_SHOW)
 
@@ -938,43 +938,43 @@ Func _PropertiesDlg($sEntry, $sRoot, $hWnd = $main_dlg)
 	EndIf
 	
 	GUISetState(@SW_DISABLE, $hWnd)
-	Local $properties_dlg = GUICreate("Свойства", $iWidth, $iHeight, $iLeft, $iTop, $WS_CAPTION + $WS_SYSMENU, $WS_EX_DLGMODALFRAME, $hWnd)
+	Local $properties_dlg = GUICreate("РЎРІРѕР№СЃС‚РІР°", $iWidth, $iHeight, $iLeft, $iTop, $WS_CAPTION + $WS_SYSMENU, $WS_EX_DLGMODALFRAME, $hWnd)
 	Local $hIcon = _WinAPI_GetClassLong($properties_dlg, $GCL_HICON)
 	_WinAPI_DestroyIcon($hIcon)
 	_WinAPI_SetClassLong($properties_dlg, $GCL_HICON, 0)
 	_WinAPI_SetClassLong($properties_dlg, $GCL_HICONSM, 0)
 	
-	GUICtrlCreateGroup("Свойства программы", 10, 5, 420, 150)
+	GUICtrlCreateGroup("РЎРІРѕР№СЃС‚РІР° РїСЂРѕРіСЂР°РјРјС‹", 10, 5, 420, 150)
 	DllCall("UxTheme.dll", "int", "SetWindowTheme", "hwnd", GUICtrlGetHandle(-1), "wstr", "", "wstr", "")
 	GUICtrlCreateIcon("", -1, 25, 30, 32, 32)
 	_EntrySetIcon(-1, $sEntry, 1, $sRoot)
 	
-	GUICtrlCreateLabel("Название:", 60, 25, 75, 15, $SS_RIGHT)
+	GUICtrlCreateLabel("РќР°Р·РІР°РЅРёРµ:", 60, 25, 75, 15, $SS_RIGHT)
 	GUICtrlCreateInput($DisplayName, 145, 25, 270, 15, $ES_READONLY + $ES_AUTOHSCROLL, $WS_EX_WINDOWEDGE)
 
-	GUICtrlCreateLabel("Версия:", 60, 45, 75, 15, $SS_RIGHT)
+	GUICtrlCreateLabel("Р’РµСЂСЃРёСЏ:", 60, 45, 75, 15, $SS_RIGHT)
 	GUICtrlCreateInput($DisplayVersion, 145, 45, 270, 15, $ES_READONLY + $ES_AUTOHSCROLL, $WS_EX_WINDOWEDGE)
 
-	GUICtrlCreateLabel("Издатель:", 60, 65, 75, 15, $SS_RIGHT)
+	GUICtrlCreateLabel("РР·РґР°С‚РµР»СЊ:", 60, 65, 75, 15, $SS_RIGHT)
 	GUICtrlCreateInput($Publisher, 145, 65, 270, 15, $ES_READONLY + $ES_AUTOHSCROLL, $WS_EX_WINDOWEDGE)
 	
-	GUICtrlCreateLabel("Ветка:", 60, 85, 75, 15, $SS_RIGHT)
+	GUICtrlCreateLabel("Р’РµС‚РєР°:", 60, 85, 75, 15, $SS_RIGHT)
 	GUICtrlCreateInput($sRoot, 145, 85, 270, 15, $ES_READONLY + $ES_AUTOHSCROLL, $WS_EX_WINDOWEDGE)
 
-	GUICtrlCreateLabel("Запись:", 60, 105, 75, 15, $SS_RIGHT)
+	GUICtrlCreateLabel("Р—Р°РїРёСЃСЊ:", 60, 105, 75, 15, $SS_RIGHT)
 	GUICtrlCreateInput($sEntry, 145, 105, 270, 15, $ES_READONLY + $ES_AUTOHSCROLL, $WS_EX_WINDOWEDGE)
 
-	GUICtrlCreateLabel("Полный путь:", 60, 125, 75, 15, $SS_RIGHT)
+	GUICtrlCreateLabel("РџРѕР»РЅС‹Р№ РїСѓС‚СЊ:", 60, 125, 75, 15, $SS_RIGHT)
 	GUICtrlCreateInput($RegPath, 145, 125, 270, 15, $ES_READONLY + $ES_AUTOHSCROLL, $WS_EX_WINDOWEDGE)
 
 	Local $properties_lv = GUICtrlCreateListView("", 10, 162, 420, 250, $LVS_SORTASCENDING + $LVS_NOSORTHEADER)
 	_GUICtrlListView_SetExtendedListViewStyle($properties_lv, $LVS_EX_FULLROWSELECT + $LVS_EX_INFOTIP + $LVS_EX_GRIDLINES)
-	_GUICtrlListView_AddColumn($properties_lv, "Параметр", 150)
-	_GUICtrlListView_AddColumn($properties_lv, "Значение", 265)
+	_GUICtrlListView_AddColumn($properties_lv, "РџР°СЂР°РјРµС‚СЂ", 150)
+	_GUICtrlListView_AddColumn($properties_lv, "Р—РЅР°С‡РµРЅРёРµ", 265)
 	
 	Local $properties_cxt = GUICtrlCreateContextMenu($properties_lv)
-	Local $copy_item = GUICtrlCreateMenuItem("Копировать", $properties_cxt)
-	Local $copy_value_item = GUICtrlCreateMenuItem("Копировать значение", $properties_cxt)
+	Local $copy_item = GUICtrlCreateMenuItem("РљРѕРїРёСЂРѕРІР°С‚СЊ", $properties_cxt)
+	Local $copy_value_item = GUICtrlCreateMenuItem("РљРѕРїРёСЂРѕРІР°С‚СЊ Р·РЅР°С‡РµРЅРёРµ", $properties_cxt)
 	
 	Local $i = 1
 
@@ -997,10 +997,10 @@ Func _PropertiesDlg($sEntry, $sRoot, $hWnd = $main_dlg)
 		$i+=1
 	WEnd
 	
-	Local $regedit_btn = GUICtrlCreateButton("Открыть в реестре", 10, 420, 120, 25, -1, $WS_EX_STATICEDGE)
+	Local $regedit_btn = GUICtrlCreateButton("РћС‚РєСЂС‹С‚СЊ РІ СЂРµРµСЃС‚СЂРµ", 10, 420, 120, 25, -1, $WS_EX_STATICEDGE)
 	DllCall("UxTheme.dll", "int", "SetWindowTheme", "hwnd", GUICtrlGetHandle(-1), "wstr", "", "wstr", "")
 	
-	Local $close_btn = GUICtrlCreateButton("Закрыть", 356, 420, 75, 25, $BS_DEFPUSHBUTTON, $WS_EX_STATICEDGE)
+	Local $close_btn = GUICtrlCreateButton("Р—Р°РєСЂС‹С‚СЊ", 356, 420, 75, 25, $BS_DEFPUSHBUTTON, $WS_EX_STATICEDGE)
 	DllCall("UxTheme.dll", "int", "SetWindowTheme", "hwnd", GUICtrlGetHandle(-1), "wstr", "", "wstr", "")
 
 	GUISetState(@SW_SHOW)
@@ -1168,7 +1168,7 @@ Func _GenerateHTMLReport()
 	Local $HTML = '<html>' &@CRLF& _
 	'<head>' &@CRLF& _
 	'<meta http-equiv="Content-Type" content="text/html; charset=1251"/>' &@CRLF& _
-	'<title>Установленные программы</title>' &@CRLF&@CRLF& _
+	'<title>РЈСЃС‚Р°РЅРѕРІР»РµРЅРЅС‹Рµ РїСЂРѕРіСЂР°РјРјС‹</title>' &@CRLF&@CRLF& _
 	'<style>' &@CRLF& _
 	'body{' &@CRLF& _
 	'	margin:0;' &@CRLF& _
@@ -1191,10 +1191,10 @@ Func _GenerateHTMLReport()
 	'<div id="container">' &@CRLF& _
 	'	<div id="content">' &@CRLF& _
 	'		<table cellspacing="0" cellpadding="0">' &@CRLF& _
-	'		<tr><th>Название программы</th><th>Издатель</th><th>Версия</th><th>Комманда удаления</th><th>Ключ в реестре</th><th>Инсталлятор</th><th>Ветка реестра</th><th>Дата установки</th></tr>' &@CRLF&@CRLF& _
+	'		<tr><th>РќР°Р·РІР°РЅРёРµ РїСЂРѕРіСЂР°РјРјС‹</th><th>РР·РґР°С‚РµР»СЊ</th><th>Р’РµСЂСЃРёСЏ</th><th>РљРѕРјРјР°РЅРґР° СѓРґР°Р»РµРЅРёСЏ</th><th>РљР»СЋС‡ РІ СЂРµРµСЃС‚СЂРµ</th><th>РРЅСЃС‚Р°Р»Р»СЏС‚РѕСЂ</th><th>Р’РµС‚РєР° СЂРµРµСЃС‚СЂР°</th><th>Р”Р°С‚Р° СѓСЃС‚Р°РЅРѕРІРєРё</th></tr>' &@CRLF&@CRLF& _
 	$sText &@CRLF&@CRLF& _
 	'		</table>' &@CRLF& _
-	'<div align=center><a href='& $homepage &'>'& $application &" "& $version&'</a><br>Copyright © 2010 [Nuker-Hoax]</div>' &@CRLF& _
+	'<div align=center><a href='& $homepage &'>'& $application &" "& $version&'</a><br>Copyright В© 2010 [Nuker-Hoax]</div>' &@CRLF& _
 	'	</div>' &@CRLF& _
 	'</div>' &@CRLF& _
 	'</body></html>' &@CRLF& _
@@ -1387,13 +1387,13 @@ Func _RegOpenKey($sRegKey, $hWnd = $main_dlg)
 	Local $Computer, $CheckRegedit = RegRead("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\System", "DisableRegistryTools")
 	
 	If $CheckRegedit = 1 and $admin_status = 1 Then
-		If MsgBox(32 + 4, "Ошибка", "Редактирование реестра запрещено администратором системы"&@CRLF&"Вы хотите включить редактор реестра для продолжения?", -1, $hWnd) = 6 Then
+		If MsgBox(32 + 4, "РћС€РёР±РєР°", "Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ СЂРµРµСЃС‚СЂР° Р·Р°РїСЂРµС‰РµРЅРѕ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРј СЃРёСЃС‚РµРјС‹"&@CRLF&"Р’С‹ С…РѕС‚РёС‚Рµ РІРєР»СЋС‡РёС‚СЊ СЂРµРґР°РєС‚РѕСЂ СЂРµРµСЃС‚СЂР° РґР»СЏ РїСЂРѕРґРѕР»Р¶РµРЅРёСЏ?", -1, $hWnd) = 6 Then
 			RegWrite("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\System", "DisableRegistryTools", "REG_DWORD", 0)
 		Else
 			Return 0
 		EndIf
 	ElseIf $CheckRegedit = 1 and $admin_status = 0 Then
-		MsgBox(16, "Ошибка", "Редактирование реестра запрещено администратором системы", -1, $hWnd)
+		MsgBox(16, "РћС€РёР±РєР°", "Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ СЂРµРµСЃС‚СЂР° Р·Р°РїСЂРµС‰РµРЅРѕ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРј СЃРёСЃС‚РµРјС‹", -1, $hWnd)
 		Return 0
 	EndIf
 	
@@ -1415,11 +1415,11 @@ Func _RunWait($sCMD, $sEntry, $sRoot, $iNoGui = 0, $hWnd = $main_dlg)
 		_EntrySetIcon($app_icon, $sEntry, 1, $sRoot)
 		Local $DisplayName = RegRead($sRoot &"\Software\Microsoft\Windows\CurrentVersion\Uninstall\" & $sEntry, "DisplayName")
 		
-		GUICtrlCreateLabel("Деинсталляция:", 52, 10, 185, 15)
+		GUICtrlCreateLabel("Р”РµРёРЅСЃС‚Р°Р»Р»СЏС†РёСЏ:", 52, 10, 185, 15)
 		GUICtrlCreateLabel($DisplayName, 52, 30, 185, 30, $GUI_FOCUS)
-		GUICtrlCreateLabel("Нажмите чтобы закрыть окно:", 10, 65, 160, 20, $SS_CENTERIMAGE)
+		GUICtrlCreateLabel("РќР°Р¶РјРёС‚Рµ С‡С‚РѕР±С‹ Р·Р°РєСЂС‹С‚СЊ РѕРєРЅРѕ:", 10, 65, 160, 20, $SS_CENTERIMAGE)
 
-		Local $close_dlg = GUICtrlCreateButton("Готово", 175, 65, 65, 20, -1, $WS_EX_STATICEDGE)
+		Local $close_dlg = GUICtrlCreateButton("Р“РѕС‚РѕРІРѕ", 175, 65, 65, 20, -1, $WS_EX_STATICEDGE)
 		GUICtrlSetState(-1, $GUI_DEFBUTTON)
 		DllCall("UxTheme.dll", "int", "SetWindowTheme", "hwnd", GUICtrlGetHandle(-1), "wstr", "", "wstr", "")
 
@@ -1497,7 +1497,7 @@ Func _FindSoftware($sText, $iReverse, $iMatchCase)
 
 	$iFind = _GUICtrlListView_FindInText($uninstall_lv, $sText, $iStart, 0, $iReverse)
 	If $iFind = -1 Then
-		MsgBox(64, "Поиск", "Поиск завершён", 0, $main_dlg)
+		MsgBox(64, "РџРѕРёСЃРє", "РџРѕРёСЃРє Р·Р°РІРµСЂС€С‘РЅ", 0, $main_dlg)
 	Else
 		_GUICtrlListView_ClickItem($uninstall_lv, $iFind)
 	EndIf
