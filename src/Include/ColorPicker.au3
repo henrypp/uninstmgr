@@ -2,39 +2,40 @@
 
 #cs
 
-	Title:			Color Picker Control UDF Library for AutoIt3
-	Filename:		ColorPicker.au3
-	Description:	Creates and manages an Color Picker control for the GUI
-	Author:			Yashied
-	Version:		1.4
-	Requirements:	AutoIt v3.3 +, Developed/Tested on WindowsXP Pro Service Pack 2
-	Uses:			GUIButton.au3, GUIImageList.au3, SendMessage.au3, StaticConstants.au3, WinAPI.au3, WindowsConstants.au3
-	Notes:			The library registers (permanently) the following window message:
+    Title:          Color Picker Control UDF Library for AutoIt3
+    Filename:       ColorPicker.au3
+    Description:    Creates and manages a Color Picker control for the GUI
+    Author:         Yashied
+    Version:        1.5
+    Requirements:   AutoIt v3.3 +, Developed/Tested on WindowsXP Pro Service Pack 2
+    Uses:           GUIConstantsEx.au3, GUIButton.au3, GUIImageList.au3, SendMessage.au3, StaticConstants.au3, WinAPI.au3, WindowsConstants.au3
+    Notes:          The library registers (permanently) the following window message:
 
-					WM_ACTIVATE
-					WM_COMMAND
-					WM_MOUSEWHEEL
-					WM_SETCURSOR
+                    WM_ACTIVATE
+                    WM_COMMAND
+                    WM_MOUSEWHEEL
+                    WM_SETCURSOR
 
-	Available functions:
+    Available functions:
 
-	_GUIColorPicker_Create
-	_GUIColorPicker_Delete
-	_GUIColorPicker_GetColor
-	_GUIColorPicker_SetColor
-	_GUIColorPicker_GetPalette
-	_GUIColorPicker_SetPalette
+    _GUIColorPicker_Create
+    _GUIColorPicker_Delete
+    _GUIColorPicker_Release
+    _GUIColorPicker_GetColor
+    _GUIColorPicker_SetColor
+    _GUIColorPicker_GetPalette
+    _GUIColorPicker_SetPalette
 
-	Example:
+    Example1:
 
         #Include <ColorPicker.au3>
         #Include <WinAPI.au3>
 
         Opt('MustDeclareVars', 1)
 
-        Global $Form, $Label, $Msg, $Data, $Picker1, $Picker2, $Picker3, $hInstance, $hCursor
+        Global $hForm, $Msg, $Label, $Picker1, $Picker2, $Picker3, $Data, $hInstance, $hCursor
 
-        $Form = GUICreate('Color Picker', 300, 200)
+        $hForm = GUICreate('Color Picker', 300, 200)
 
         ; Load cursor
         $hInstance = _WinAPI_LoadLibrary(@SystemDir & '\mspaint.exe')
@@ -67,7 +68,7 @@
 
         ; Create Picker3 with custom color palette
         $Picker3 = _GUIColorPicker_Create('Color...', 223, 170, 70, 23, 0x2DB42D, BitOR($CP_FLAG_TIP, $CP_FLAG_MAGNIFICATION), $aPalette, 8, 8)
-        $Label = GUICtrlCreateLabel('', 194, 171, 22, 22, 0x1000)
+        $Label = GUICtrlCreateLabel('', 194, 171, 22, 22, $SS_SUNKEN)
         GUICtrlSetBkColor(-1, 0x2DB42D)
         GUICtrlSetTip(-1, '2DB42D')
 
@@ -76,7 +77,7 @@
         While 1
             $Msg = GUIGetMsg()
             Switch $Msg ; Color Picker sends the message that the color is selected
-                Case - 3
+                Case $GUI_EVENT_CLOSE
                     ExitLoop
                 Case $Picker1
                     $Data = _GUIColorPicker_GetColor($Picker1, 1)
@@ -94,10 +95,36 @@
             EndSwitch
         WEnd
 
+    Example2 (required ColorChooser.au3):
+
+        #Include <ColorChooser.au3>
+        #Include <ColorPicker.au3>
+
+        Opt('MustDeclareVars', 1)
+
+        Global $hForm, $Msg, $Label, $Picker
+
+        $hForm = GUICreate('MyGUI', 170, 200)
+        $Label = GUICtrlCreateLabel('', 15, 15, 140, 140, $SS_SUNKEN)
+        GUICtrlSetBkColor(-1, 0x50CA1B)
+        $Picker = _GUIColorPicker_Create('', 55, 166, 60, 23, 0x50CA1B, BitOR($CP_FLAG_CHOOSERBUTTON, $CP_FLAG_MAGNIFICATION, $CP_FLAG_ARROWSTYLE), 0, -1, -1, 0, 'Simple Text', 'Custom...', '_ColorChooserDialog')
+        GUISetState()
+
+        While 1
+            $Msg = GUIGetMsg()
+            Switch $Msg
+                Case $GUI_EVENT_CLOSE
+                    ExitLoop
+                Case $Picker
+                    GUICtrlSetBkColor($Label, _GUIColorPicker_GetColor($Picker))
+            EndSwitch
+        WEnd
+
 #ce
 
 #Include-once
 
+#Include <GUIConstantsEx.au3>
 #Include <GUIButton.au3>
 #Include <GUIImageList.au3>
 #Include <SendMessage.au3>
@@ -135,36 +162,43 @@ Dim $cpPalette[$cpWidth * $cpHeight][2] = _
 	[0xFF0000, 'Red'     ], [0xFF9900, 'Light Orange'], [0x99CC00, 'Lime'        ], [0x339966, 'Sea Green'   ], [0x33CCCC, 'Aqua'           ], [0x3366FF, 'Light Blue'], [0x800080, 'Violet'   ], [0x999999, 'Gray-40%'], _
 	[0xFF00FF, 'Pink'    ], [0xFFCC00, 'Gold'        ], [0xFFFF00, 'Yellow'      ], [0x00FF00, 'Bright Green'], [0x00FFFF, 'Turquoise'      ], [0x00CCFF, 'Sky Blue'  ], [0x993366, 'Plum'     ], [0xC0C0C0, 'Gray-25%'], _
 	[0xFF99CC, 'Rose'    ], [0xFFCC99, 'Tan'         ], [0xFFFF99, 'Light Yellow'], [0xCCFFCC, 'Light Green' ], [0xCCFFFF, 'Light Turquoise'], [0x99CCFF, 'Pale Blue' ], [0xCC99FF, 'Lavender' ], [0xFFFFFF, 'White'   ]]
-	 
-Dim $cpId[1][14] = [[0, 0, 0, 0, 0]]
+
+Dim $cpId[1][17] = [[0, 0, 0, 0, 0, 0]]
 
 #cs
-	
+
 DO NOT USE THIS ARRAY IN THE SCRIPT, INTERNAL USE ONLY!
 
 $cpId[0][0 ]   - Count item of array
-	 [0][1 ]   - Reserved
-	 [0][2 ]   - Handle to the "Color Picker" window
-	 [0][3 ]   - Dummy control (controlID)
-	 [0][4 ]   - Handle to the cursor (current)
-	 [0][5-12] - Don`t used
-	 
+     [0][1 ]   - Reserved
+     [0][2 ]   - Handle to the "Color Picker" window
+     [0][3 ]   - Dummy control (controlID)
+     [0][4 ]   - Handle to the cursor (current)
+     [0][5 ]   - WM_ACTIVATE control flag
+     [0][6-16] - Don`t used
+
 $cpId[i][0 ]   - The control identifier (controlID) as returned by GUICtrlCreateButton()
-	 [i][1 ]   - Handle to the control (GUICtrlGetHandle($cpId[i][0]))
-	 [i][2 ]   - Handle to the ImageList for further release
-	 [i][3 ]   - Last selected color (in RGB)
-	 [i][4 ]   - Custom palette
-	 [i][5 ]   - Text of the button control
-	 [i][6 ]   - Title of the "Color Picker" dialog box
-	 [i][7 ]   - Flags
-	 [i][8 ]   - Text of the button for the "Color Chooser" dialog box
-	 [i][9 ]   - Width of the palette (in color items)
-	 [i][10]   - Height of the palette (in color items)
-	 [i][11]   - Width of the control
-	 [i][12]   - Height of the control
-	 [i][13]   - Handle to the cursor (0 if not defined)
-	
+     [i][1 ]   - Handle to the control (GUICtrlGetHandle($cpId[i][0]))
+     [i][2 ]   - Handle to the ImageList for further release
+     [i][3 ]   - Last selected color (in RGB)
+     [i][4 ]   - Custom palette
+     [i][5 ]   - Text of the button control
+     [i][6 ]   - Title of the "Color Picker" window
+     [i][7 ]   - Flags
+     [i][8 ]   - Text of the button for the "Color Chooser" dialog box
+     [i][9 ]   - Width of the palette (in color items)
+     [i][10]   - Height of the palette (in color items)
+     [i][11]   - Width of the control
+     [i][12]   - Height of the control
+     [i][13]   - Handle to the parnet window for a control
+     [i][14]   - Handle to the cursor (0 if not defined)
+     [i][15]   - User "Color Chooser" function
+     [i][16]   - Reserved
+
 #ce
+
+Global $__CP_WM0111 = 0
+Global $__CP_WM0020 = 0
 
 #EndRegion Local Variables and Constants
 
@@ -173,10 +207,14 @@ $cpId[i][0 ]   - The control identifier (controlID) as returned by GUICtrlCreate
 ; IMPORTANT! If you register the following window messages in your code, you should call handlers from this library until
 ; you return from your handlers, otherwise the Clor Picker controls will not work properly. For example:
 ;
-; Func MY_WM_COMMAND($hWnd, $iMsg, $wParam, $lParam)
-;   CP_WM_COMMAND($hWnd, $iMsg, $wParam, $lParam)
-;   ...
-; EndFunc   ;==>MY_WM_COMMAND
+; Func MY_WM_SETCURSOR($hWnd, $iMsg, $wParam, $lParam)
+;     Local $Result = CP_WM_SETCURSOR($hWnd, $iMsg, $wParam, $lParam)
+;     If Not $Result Then
+;         Return 0
+;     EndIf
+;     ...
+;     Return $GUI_RUNDEFMSG
+; EndFunc   ;==>MY_WM_SETCURSOR
 
 GUIRegisterMsg($CP_WM_ACTIVATE, 'CP_WM_ACTIVATE')
 GUIRegisterMsg($CP_WM_COMMAND, 'CP_WM_COMMAND')
@@ -190,20 +228,21 @@ GUIRegisterMsg($CP_WM_SETCURSOR, 'CP_WM_SETCURSOR')
 ; #FUNCTION# ====================================================================================================================
 ; Name...........: _GUIColorPicker_Create
 ; Description....: Creates a Color Picker control for the GUI.
-; Syntax.........: _GUIColorPicker_Create ( $sText, $iLeft, $iTop, $iWidth, $iHeight [, $iRGB [, $iFlags [, $aPalette [, $iWidthPalette [, $iHeightPalette [, $hCursor [, $sTitle [, $sButton ]]]]]]]] )
-; Parameters.....: $sText          - The text of the button control. If the value of this parameter is "" then the button will display the
-;                                    rectangle with filled of current ($iRGB) color.
+; Syntax.........: _GUIColorPicker_Create ( $sText, $iLeft, $iTop, $iWidth, $iHeight [, $iRGB [, $iFlags [, $aPalette [, $iWidthPalette [, $iHeightPalette [, $hCursor [, $sTitle [, $sButton [, $sColorFunc]]]]]]]]] )
+; Parameters.....: $sText          - The text of the button control. If the value of this parameter is "" then the button will
+;                                    display the rectangle with filled of current ($iRGB) color.
 ;                  $iLeft          - The left side of the control.
 ;                  $iTop           - The top of the control.
 ;                  $iWidth         - The width of the control.
 ;                  $iHeight        - The height of the control.
 ;                  $iRGB           - Default selected color (in RGB). Default is 0 (Black).
-;                  $iFlags         - Defines the style of the dialog box. This parameter can be a combination of the following values.
+;                  $iFlags         - Defines a style of the "Color Picker" window. This parameter can be a combination of the following values.
 ;
 ;                                    $CP_FLAG_CHOOSERBUTTON
 ;                                    $CP_FLAG_TIP
 ;                                    $CP_FLAG_MAGNIFICATION
 ;                                    $CP_FLAG_ARROWSTYLE
+;                                    $CP_FLAG_HANDCURSOR (don't used)
 ;                                    $CP_FLAG_MOUSEWHEEL
 ;
 ;                                    (See constants section in this library)
@@ -214,9 +253,18 @@ GUIRegisterMsg($CP_WM_SETCURSOR, 'CP_WM_SETCURSOR')
 ;                  $iHeightPalette - Height of the palette (in color items). Minimum value of - 4. Default is (-1) - uses a default height.
 ;                  $hCursor        - Handle to the user defined cursor. To use one of the predefined cursors set this parameter to
 ;                                    one of the $IDC_... constants. Default is 0 - does not use cursor.
-;                  $sTitle         - Title of the "Color Picker" dialog box. If the value of this parameter is "" then the title
+;                  $sTitle         - Title of the "Color Picker" window. If the value of this parameter is "" then the title
 ;                                    will not be displayed. Default is "".
 ;                  $sButton        - The text of the button for the "Color Chooser" dialog box. Default is "Custom...".
+;                  $sColorFunc     - User "Color Chooser" dialog box function. To make the user function workable you have to define it
+;                                    with 2 function parameters otherwise the function won't be called.
+;
+;                                    Func _MyColorChooserDialog($iColorRef, $hParent)
+;
+;                                    A custom function must return a color value, in RGB, or (-1) if the user does not choose a color.
+;                                    If this parameter is empty string or not used, will be used Windows default "Color Chooser" function,
+;                                    like _ChooseColor() from Misc.au3 UDF library. This parameter is valid only if the
+;                                    $CP_FLAG_CHOOSERBUTTON flag is set.
 ; Return values..: Success         - 1
 ;                  Failure         - 0
 ; Author.........: Yashied
@@ -229,7 +277,7 @@ GUIRegisterMsg($CP_WM_SETCURSOR, 'CP_WM_SETCURSOR')
 ; Example........: Yes
 ; ===============================================================================================================================
 
-Func _GUIColorPicker_Create($sText, $iLeft, $iTop, $iWidth, $iHeight, $iRGB = 0, $iFlags = -1, $aPalette = 0, $iWidthPalette = -1, $iHeightPalette = -1, $hCursor = 0, $sTitle = '', $sButton = 'Custom...')
+Func _GUIColorPicker_Create($sText, $iLeft, $iTop, $iWidth, $iHeight, $iRGB = 0, $iFlags = -1, $aPalette = 0, $iWidthPalette = -1, $iHeightPalette = -1, $hCursor = 0, $sTitle = '', $sButton = 'Custom...', $sColorFunc = '')
 
 	If $iFlags < 0 Then
 		$iFlags = $CP_FLAG_DEFAULT
@@ -238,6 +286,7 @@ Func _GUIColorPicker_Create($sText, $iLeft, $iTop, $iWidth, $iHeight, $iRGB = 0,
 	$sText = StringStripWS($sText, 3)
 	$sTitle = StringStripWS($sTitle, 3)
 	$sButton = StringStripWS($sButton, 3)
+	$sColorFunc = StringStripWS($sColorFunc, 3)
 	$iFlags = BitOR($iFlags, 0x0080 * (StringLen($sText) = 0), 0x0100 * (StringLen($sTitle) > 0))
 
 	Local $ID = GUICtrlCreateButton($sText, $iLeft, $iTop, $iWidth, $iHeight)
@@ -257,8 +306,9 @@ Func _GUIColorPicker_Create($sText, $iLeft, $iTop, $iWidth, $iHeight, $iRGB = 0,
 		$hImageList = _GUIImageList_Create($iWidth - 10, $iHeight - 10, 5, 1)
 		_GUIImageList_Add($hImageList, $aData[0], $aData[1])
 		_GUICtrlButton_SetImageList($hID, $hImageList, 4)
-		_WinAPI_DeleteObject($aData[0])
-		_WinAPI_DeleteObject($aData[1])
+		For $i = 0 To 1
+			_WinAPI_DeleteObject($aData[$i])
+		Next
 	EndIf
 	If $iWidthPalette < 4 Then
 		$iWidthPalette = $cpWidth
@@ -294,7 +344,10 @@ Func _GUIColorPicker_Create($sText, $iLeft, $iTop, $iWidth, $iHeight, $iRGB = 0,
 	$cpId[$cpId[0][0]][10] = $iHeightPalette
 	$cpId[$cpId[0][0]][11] = $iWidth
 	$cpId[$cpId[0][0]][12] = $iHeight
-	$cpId[$cpId[0][0]][13] = $hCursor
+	$cpId[$cpId[0][0]][13] = _WinAPI_GetParent($hID)
+	$cpId[$cpId[0][0]][14] = $hCursor
+	$cpId[$cpId[0][0]][15] = $sColorFunc
+	$cpId[$cpId[0][0]][16] = 0
 	Return $ID
 EndFunc   ;==>_GUIColorPicker_Create
 
@@ -323,8 +376,8 @@ Func _GUIColorPicker_Delete($controlID)
 				$cpId[$i][3] = -1
 				CP_SetColor($i)
 			EndIf
-			If $cpId[$i][13] Then
-				DllCall('user32.dll', 'int', 'DestroyCursor', 'ptr', $cpId[$i][13])
+			If $cpId[$i][14] Then
+				DllCall('user32.dll', 'int', 'DestroyCursor', 'ptr', $cpId[$i][14])
 			EndIf
 			For $j = $i To $cpId[0][0] - 1
 				For $k = 0 To UBound($cpId, 2) - 1
@@ -338,6 +391,42 @@ Func _GUIColorPicker_Delete($controlID)
 	Next
 	Return 0
 EndFunc   ;==>_GUIColorPicker_Delete
+
+; #FUNCTION# ====================================================================================================================
+; Name...........: _GUIColorPicker_Release
+; Description....: Deletes all Color Picker controls for a window (GUI).
+; Syntax.........: _GUIColorPicker_Release ( $hWnd )
+; Parameters.....: $hWnd   - Handle to the window to be released.
+; Return values..: Success - 1
+;                  Failure - 0
+; Author.........: Yashied
+; Modified.......:
+; Remarks........:
+; Related........:
+; Link...........:
+; Example........: Yes
+; ===============================================================================================================================
+
+Func _GUIColorPicker_Release($hWnd)
+
+	If Not WinExists($hWnd) Then
+		Return SetError(1, 0, 0)
+	EndIf
+
+	Local $Count = 1, $Result = 0
+
+	While $Count <= $cpId[0][0]
+		If $cpId[$Count][13] = $hWnd Then
+			If Not _GUIColorPicker_Delete($cpId[$Count][0]) Then
+				Return 0
+			EndIf
+			$Result = 1
+		Else
+			$Count += 1
+		EndIf
+	WEnd
+	Return $Result
+EndFunc   ;==>_GUIColorPicker_Release
 
 ; #FUNCTION# ====================================================================================================================
 ; Name...........: _GUIColorPicker_GetColor
@@ -479,6 +568,10 @@ EndFunc   ;==>_GUIColorPicker_SetPalette
 
 #Region Internal Functions
 
+Func CP_Assign(ByRef $iVariable, $iValue)
+	$iVariable = $iValue
+EndFunc   ;==>CP_Assign
+
 Func CP_CreateArrowBitmap($iRGB, $iWidth, $iHeight)
 
 	Local $hDC, $hBackDC, $hFrontDC, $hFront, $hBack, $hPen
@@ -486,7 +579,7 @@ Func CP_CreateArrowBitmap($iRGB, $iWidth, $iHeight)
 
 	$hDC = _WinAPI_GetDC(0)
 	$hBackDC = _WinAPI_CreateCompatibleDC($hDC)
-	$hBack = _WinAPI_CreateSolidBitmap(0, 0x000000, $iWidth, $iHeight)
+	$hBack = _WinAPI_CreateSolidBitmap(0, 0, $iWidth, $iHeight)
 	_WinAPI_SelectObject($hBackDC, $hBack)
 	$hFrontDC = _WinAPI_CreateCompatibleDC($hDC)
 	$hFront = _WinAPI_CreateSolidBitmap(0, 0xFFFFFF, $iWidth - 11, $iHeight)
@@ -500,11 +593,11 @@ Func CP_CreateArrowBitmap($iRGB, $iWidth, $iHeight)
 	_WinAPI_DeleteObject($hFront)
 	$hBack = _WinAPI_CreateSolidBitmap(0, 0xFFFFFF, $iWidth, $iHeight)
 	_WinAPI_SelectObject($hBackDC, $hBack)
-	$hFront = _WinAPI_CreateSolidBitmap(0, 0x000000, $iWidth - 11, $iHeight)
+	$hFront = _WinAPI_CreateSolidBitmap(0, 0, $iWidth - 11, $iHeight)
 	_WinAPI_SelectObject($hFrontDC, $hFront)
 	_WinAPI_BitBlt($hBackDC, 0, 0, $iWidth - 11, $iHeight, $hFrontDC, 0, 0, $SRCCOPY)
 	_WinAPI_DeleteObject($hFront)
-	$hPen = _WinAPI_CreatePen($PS_SOLID, 1, 0x000000)
+	$hPen = _WinAPI_CreatePen($PS_SOLID, 1, 0)
 	_WinAPI_SelectObject($hBackDC, $hPen)
 	For $i = 1 To 4
 		_WinAPI_DrawLine($hBackDC, $iWidth - $i - 4, Int($iHeight / 2) + Mod($iHeight, 2) - $i + 2, $iWidth + $i - 5, Int($iHeight / 2) + Mod($iHeight, 2) - $i + 2)
@@ -569,14 +662,13 @@ EndFunc   ;==>CP_Index
 
 Func CP_PickerDlg($ID)
 
-	Local $Msg, $X, $Y, $Index, $Mouse, $Rgb, $Size, $Active = 0, $Custom = -1, $Result = 0, $Pressed = False
+	Local $Msg, $X, $Y, $Cursor, $Index, $Prev, $Rgb, $Size, $Active = 0, $Custom = -1, $Result = 0, $Pressed = False
 	Local $Label[$cpId[$ID][9] * $cpId[$ID][10]]
+	Local $Accel[2][2] = [['{ENTER}', 0], ['{ESC}', 0]]
 	Local $Width = 25 * $cpId[$ID][9] + 3, $Height = 25 * $cpId[$ID][10] + 3
 	Local $dH = 28 * (BitAND($cpId[$ID][7], 0x0100) = 0x0100)
-	Local $hParent = _WinAPI_GetParent($cpId[$ID][1])
 	Local $tRECT = _WinAPI_GetWindowRect($cpId[$ID][1])
 	Local $GUIOnEventMode = Opt('GUIOnEventMode', 0)
-	Local $GUICloseOnESC = Opt('GUICloseOnESC', 1)
 	Local $Taskbar = CP_TaskbarHeight()
 	Local $Palette = $cpId[$ID][4]
 
@@ -594,7 +686,7 @@ Func CP_PickerDlg($ID)
 	If $Y > @DesktopHeight - $Taskbar - $dH - 28 * BitAND($cpId[$ID][7], $CP_FLAG_CHOOSERBUTTON) - ($Height + 6) Then
 		$Y = @DesktopHeight - $Taskbar - $dH - 28 * BitAND($cpId[$ID][7], $CP_FLAG_CHOOSERBUTTON) - ($Height + 6)
 	EndIf
-	$cpId[0][2] = GUICreate('', $Width, $Height + $dH + 28 * BitAND($cpId[$ID][7], $CP_FLAG_CHOOSERBUTTON), $X, $Y, $WS_POPUP, $WS_EX_DLGMODALFRAME, $hParent)
+	$cpId[0][2] = GUICreate('', $Width, $Height + $dH + 28 * BitAND($cpId[$ID][7], $CP_FLAG_CHOOSERBUTTON), $X, $Y, $WS_POPUP, $WS_EX_DLGMODALFRAME, $cpId[$ID][13])
 ;	GUISetBkColor(0xFCFCFC, $cpId[0][2])
 	If BitAND($cpId[$ID][7], 0x0100) Then
 		GUICtrlCreateLabel('', 4, 4, $Width - 8, 23, $SS_GRAYFRAME)
@@ -614,12 +706,15 @@ Func CP_PickerDlg($ID)
 			If BitAND($cpId[$ID][7], $CP_FLAG_TIP) Then
 				GUICtrlSetTip(-1, $Palette[$Index][1])
 			EndIf
-			If $cpId[$ID][13] Then
-				GUICtrlSetState(-1, 128)
+			If $cpId[$ID][14] Then
+				GUICtrlSetState(-1, $GUI_DISABLE)
 			EndIf
 		Next
 	Next
 	$cpId[0][3] = GUICtrlCreateDummy()
+	For $i = 0 To 1
+		$Accel[$i][1] = $cpId[0][3]
+	Next
 	If BitAND($cpId[$ID][7], $CP_FLAG_CHOOSERBUTTON) Then
 		$Custom = GUICtrlCreateButton('', 0, 0)
 		$Size = CP_StringSize($Custom, $cpId[$ID][8]) + 24
@@ -631,43 +726,46 @@ Func CP_PickerDlg($ID)
 		GUICtrlSetData(-1, $cpId[$ID][8])
 	EndIf
 
+	GUISetAccelerators($Accel, $cpId[0][2])
 	GUISetState(@SW_SHOW, $cpId[0][2])
 
 	While 1
-		$Mouse = GUIGetCursorInfo($cpId[0][2])
-		If CP_PtInRect($Mouse[0], $Mouse[1], 2, 2 + $dH, 25 * $cpId[$ID][9], $dH + 25 * $cpId[$ID][10]) Then
-			$cpId[0][4] = $cpId[$ID][13]
-		Else
-			$cpId[0][4] = 0
-		EndIf
-		If BitXOR($Active, $Mouse[4]) Then
-			If Not $Mouse[2] Then
-				For $i = 0 To UBound($Label) - 1
-					If $Mouse[4] = $Label[$i] Then
-						If BitAND($cpId[$ID][7], $CP_FLAG_MAGNIFICATION) Then
-							$Index = CP_Index($Active, $Label)
-							GUICtrlSetPos($Active, 4 + 25 * Mod($Index, $cpId[$ID][9]), 4 + $dH + 25 * ($Index - Mod($Index, $cpId[$ID][9])) / $cpId[$ID][9], 20, 20)
-							GUICtrlSetPos($Label[$i], 2 + 25 * Mod($i, $cpId[$ID][9]), 2 + $dH + 25 * ($i - Mod($i, $cpId[$ID][9])) / $cpId[$ID][9], 24, 24)
+		$Cursor = GUIGetCursorInfo($cpId[0][2])
+		If Not @error Then
+			If CP_PtInRect($Cursor[0], $Cursor[1], 2, 2 + $dH, 25 * $cpId[$ID][9], $dH + 25 * $cpId[$ID][10]) Then
+				$cpId[0][4] = $cpId[$ID][14]
+			Else
+				$cpId[0][4] = 0
+			EndIf
+			If BitXOR($Active, $Cursor[4]) Then
+				If Not $Cursor[2] Then
+					For $i = 0 To UBound($Label) - 1
+						If $Cursor[4] = $Label[$i] Then
+							If BitAND($cpId[$ID][7], $CP_FLAG_MAGNIFICATION) Then
+								$Index = CP_Index($Active, $Label)
+								GUICtrlSetPos($Active, 4 + 25 * Mod($Index, $cpId[$ID][9]), 4 + $dH + 25 * ($Index - Mod($Index, $cpId[$ID][9])) / $cpId[$ID][9], 20, 20)
+								GUICtrlSetPos($Label[$i], 2 + 25 * Mod($i, $cpId[$ID][9]), 2 + $dH + 25 * ($i - Mod($i, $cpId[$ID][9])) / $cpId[$ID][9], 24, 24)
+							EndIf
+							$Active = $Label[$i]
+							ExitLoop
 						EndIf
-						$Active = $Label[$i]
+					Next
+				EndIf
+			Else
+				If ($Cursor[2]) And (Not $Pressed) Then
+					$Index = CP_Index($Cursor[4], $Label)
+					If $Index > -1 Then
+						$cpId[$ID][3] = $Palette[$Index][0]
+						$Result = 2
 						ExitLoop
 					EndIf
-				Next
-			EndIf
-		Else
-			If ($Mouse[2]) And (Not $Pressed) Then
-				$Index = CP_Index($Mouse[4], $Label)
-				If $Index > -1 Then
-					$cpId[$ID][3] = $Palette[$Index][0]
-					$Result = 2
-					ExitLoop
 				EndIf
 			EndIf
+			$Pressed = $Cursor[2]
 		EndIf
-		$Pressed = $Mouse[2]
 		$Msg = GUIGetMsg()
 		Switch $Msg
-			Case -3, $cpId[0][3]
+			Case $GUI_EVENT_CLOSE, $cpId[0][3]
 				ExitLoop
 			Case $Custom
 				$Result = 1
@@ -675,20 +773,39 @@ Func CP_PickerDlg($ID)
 		EndSwitch
 	WEnd
 
+	$cpId[0][5] = 1
+
 	GUIDelete($cpId[0][2])
 
 	$cpId[0][2] = 0
 	$cpId[0][3] = 0
 	$cpId[0][4] = 0
+	$cpId[0][5] = 0
 
 	Opt('GUIOnEventMode', $GUIOnEventMode)
-	Opt('GUICloseOnESC', $GUICloseOnESC)
 
 	Switch $Result
 		Case 0
 			Return 0
 		Case 1
-			$Rgb = CP_ColorChooserDlg($cpId[$ID][3], $hParent)
+			If $cpId[$ID][15] = '' Then
+				$Rgb = CP_ColorChooserDlg($cpId[$ID][3], $cpId[$ID][13])
+			Else
+				If (IsDeclared('ccData')) And ($cpId[$ID][15] = '_ColorChooserDialog') Then
+					Execute('CP_Assign($Prev, $ccData[9])')
+					Execute('CP_Assign($ccData[9], $cpId[$ID][14])')
+					$Cursor = 1
+				Else
+					$Cursor = 0
+				EndIf
+				$Rgb = Call($cpId[$ID][15], $cpId[$ID][3], $cpId[$ID][13])
+				If (@error = 0xDEAD) And (@extended = 0xBEEF) Then
+					$Rgb = -1
+				EndIf
+				If $Cursor Then
+					Execute('CP_Assign($ccData[9], $Prev)')
+				EndIf
+			EndIf
 			If $Rgb < 0 Then
 				_WinAPI_SetFocus($cpId[$ID][1])
 				Return 0
@@ -711,7 +828,7 @@ Func CP_PtInRect($iXn, $iYn, $iX1, $iY1, $iX2, $iY2)
 		Return 0
 	EndIf
 EndFunc   ;==>CP_PtInRect
-	
+
 Func CP_SetColor($ID)
 
 	Local $aData
@@ -727,8 +844,9 @@ Func CP_SetColor($ID)
 		_GUIImageList_Remove($cpId[$ID][2])
 		_GUIImageList_Add($cpId[$ID][2], $aData[0], $aData[1])
 		_GUICtrlButton_SetImageList($cpId[$ID][1], $cpId[$ID][2], 4)
-		_WinAPI_DeleteObject($aData[0])
-		_WinAPI_DeleteObject($aData[1])
+		For $i = 0 To 1
+			_WinAPI_DeleteObject($aData[$i])
+		Next
 	EndIf
 EndFunc   ;==>CP_SetColor
 
@@ -758,7 +876,7 @@ EndFunc   ;==>CP_SwitchColor
 
 Func CP_TaskbarHeight()
 
-	Local $Ret, $tRECT = DllStructCreate('int;int;int;int')
+	Local $tRECT = DllStructCreate($tagRECT)
 	Local $Ret = DllCall('user32.dll', 'int', 'SystemParametersInfo', 'int', 48, 'int', 0, 'ptr', DllStructGetPtr($tRECT), 'int', 0)
 
 	If (@error) Or ($Ret[0] = 0) Then
@@ -814,14 +932,26 @@ Func CP_WM_ACTIVATE($hWnd, $iMsg, $wParam, $lParam)
 	Switch $hWnd
 		Case $cpId[0][2]
 			Switch BitAND($wParam, 0xFFFF)
-				Case 0
-					GUICtrlSendToDummy($cpId[0][3])
+				Case 0 ; WA_INACTIVE
+					If Not $cpId[0][5] Then
+						$cpId[0][5] = 1
+						_WinAPI_ShowWindow($cpId[0][2], @SW_HIDE)
+						GUICtrlSendToDummy($cpId[0][3])
+					EndIf
 			EndSwitch
 	EndSwitch
-	Return 'GUI_RUNDEFMSG'
+	Return $GUI_RUNDEFMSG
 EndFunc   ;==>CP_WM_ACTIVATE
 
 Func CP_WM_COMMAND($hWnd, $iMsg, $wParam, $lParam)
+
+	; Handler from ColorChooser.au3
+	If (IsDeclared('__CC_WM0111')) And (Not Eval('__CC_WM0111')) Then
+		$__CP_WM0111 = 1
+		Call('CC' & '_WM_COMMAND', $hWnd, $iMsg, $wParam, $lParam)
+		$__CP_WM0111 = 0
+	EndIf
+
 	For $i = 1 To $cpId[0][0]
 		If $cpId[$i][1] = $lParam Then
 			If Number($wParam) > 0 Then
@@ -832,7 +962,7 @@ Func CP_WM_COMMAND($hWnd, $iMsg, $wParam, $lParam)
 			ExitLoop
 		EndIf
 	Next
-	Return 'GUI_RUNDEFMSG'
+	Return $GUI_RUNDEFMSG
 EndFunc   ;==>CP_WM_COMMAND
 
 Func CP_WM_MOUSEWHEEL($hWnd, $iMsg, $wParam, $lParam)
@@ -843,8 +973,9 @@ Func CP_WM_MOUSEWHEEL($hWnd, $iMsg, $wParam, $lParam)
 		If ($cpId[$i][1] = $Focus) And (BitAND($cpId[$i][7], BitOR($CP_FLAG_MOUSEWHEEL, 0x0080)) = BitOR($CP_FLAG_MOUSEWHEEL, 0x0080)) Then
 
 			Local $Palette = $cpId[$i][4]
-			Local $Pos, $Index = 0, $Max = UBound($Palette) - 1
-			Local $Wheel = BitShift($wParam, 16) / 120
+			Local $Wheel = Round(BitShift($wParam, 16) / 120)
+			Local $Max = UBound($Palette) - 1
+			Local $Pos, $Index = 0
 
 			For $j = 0 To $Max
 				If $cpId[$i][3] = $Palette[$j][0] Then
@@ -867,10 +998,23 @@ Func CP_WM_MOUSEWHEEL($hWnd, $iMsg, $wParam, $lParam)
 			EndIf
 		EndIf
 	Next
-	Return 'GUI_RUNDEFMSG'
+	Return $GUI_RUNDEFMSG
 EndFunc   ;==>CP_WM_MOUSEWHEEL
 
 Func CP_WM_SETCURSOR($hWnd, $iMsg, $wParam, $lParam)
+
+	Local $Result
+
+	; Handler from ColorChooser.au3
+	If (IsDeclared('__CC_WM0020')) And (Not Eval('__CC_WM0020')) Then
+		$__CP_WM0020 = 1
+		$Result = Call('CC' & '_WM_SETCURSOR', $hWnd, $iMsg, $wParam, $lParam)
+		$__CP_WM0020 = 0
+		If Not $Result Then
+			Return  0
+		EndIf
+	EndIf
+
 	Switch $hWnd
 		Case $cpId[0][2]
 			If $cpId[0][4] Then
@@ -878,7 +1022,7 @@ Func CP_WM_SETCURSOR($hWnd, $iMsg, $wParam, $lParam)
 				Return 0
 			EndIf
 	EndSwitch
-	Return 'GUI_RUNDEFMSG'
+	Return $GUI_RUNDEFMSG
 EndFunc   ;==>CP_WM_SETCURSOR
 
 #EndRegion Windows Message Functions

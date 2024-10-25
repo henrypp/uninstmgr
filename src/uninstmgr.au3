@@ -21,14 +21,18 @@
 
 Global $admin_status, $status_str, $find_text = ""
 
+#cs
 If @OSArch <> "X86" Then
 	MsgBox(16, "Ошибка ("& StringLower(@OSArch) &")", "Архитектура операционной системы не поддерживается")
 	Exit
 EndIf
+#ce
 
 If not IsAdmin() Then
 	$admin_status = 0
+	#cs
 	If MsgBox(4 + 32, "Внимание", 'Внимание: "'& @UserName &'" не имеет прав "Администратора"' &@CRLF& 'Продолжить выполнение программы в режиме "Только чтение"?' &@CRLF&@CRLF& 'В режиме "Только чтение" вы не можете:' &@CRLF& '- Деинсталлировать программы' &@CRLF& '- Удалять данные из реестра') = 7 Then Exit
+	#ce
 Else
 	$admin_status = 1
 EndIf
@@ -42,13 +46,6 @@ Global $settings_file = @ScriptDir &"\"& StringTrimRight(@ScriptName, 4) &".ini"
 Global $update_url = $homepage &"/update.dat"
 
 Global $reg_open_desired = $KEY_READ
-
-Global Const $GCL_HICONSM = -34, $GCL_HICON = -14
-Global Const $FR_DOWN = 0x1
-Global Const $FR_MATCHCASE = 0x4
-Global Const $FR_FINDNEXT = 0x8
-Global Const $FR_HIDEMATCHCASE = 0x8000
-Global Const $FR_HIDEWHOLEWORD = 0x10000
 
 Global $tFINDREPLACE = DllStructCreate("dword;hwnd hOwner;hwnd hInstance;dword Flags;ptr FindWhat;ptr ReplaceWith;ushort FindLen;ushort ReplaceLen;ptr CustData;ptr pHook;ptr")
 Global $tFindBuffer = DllStructCreate("char[256]")
@@ -180,6 +177,44 @@ GUIRegisterMsg($WM_SIZE, "WM_SIZE")
 
 If $check_updates_at_startup_option = 1 Then _CheckForUpdate(1)
 GUISetState(@SW_SHOW)
+
+Func RegGetTimeStamp($iRegHive, $sRegKey)
+    Local $sRes='', $aRet, $hReg = DllStructCreate("int")
+    Local $FILETIME = DllStructCreate("dword;dword")
+    Local $SYSTEMTIME1 = DllStructCreate("ushort;ushort;ushort;ushort;ushort;ushort;ushort;ushort")
+    Local $SYSTEMTIME2 = DllStructCreate("ushort;ushort;ushort;ushort;ushort;ushort;ushort;ushort")
+    Local $hAdvAPI=DllOpen('advapi32.dll'), $hKernel=DllOpen('kernel32.dll')
+    If $hAdvAPI=-1 Or $hKernel=-1 Then Return SetError(1, $aRet[0], 'DLL Open Error!')
+    $aRet = DllCall("advapi32.dll", "int", "RegOpenKeyEx", _
+        "int", $iRegHive, "str", $sRegKey, _
+        "int", 0, "int", 0x20019, _
+        "ptr", DllStructGetPtr($hReg))
+    If $aRet[0] Then Return SetError(2, $aRet[0], 'Registry Key Open Error!')
+    $aRet = DllCall("advapi32.dll", "int", "RegQueryInfoKey", _
+        "int", DllStructGetData($hReg,1), _
+        "ptr", 0, "ptr", 0, "ptr", 0, "ptr", 0, "ptr", 0, "ptr", 0, "ptr", 0, "ptr", 0, "ptr", 0, "ptr", 0, _
+        "ptr", DllStructGetPtr($FILETIME))
+    If $aRet[0] Then Return SetError(3, $aRet[0], 'Registry Key Query Error!')
+    $aRet = DllCall("advapi32.dll", "int", "RegCloseKey", _
+        "int", DllStructGetData($hReg,1))
+    If $aRet[0] Then Return SetError(4, $aRet[0], 'Registry Key Close Error!')
+    $aRet = DllCall("kernel32.dll", "int", "FileTimeToSystemTime", _
+        "ptr", DllStructGetPtr($FILETIME), _
+        "ptr", DllStructGetPtr($SYSTEMTIME1))
+    If $aRet[0]=0 Then Return SetError(5, 0, 'Time Convert Error!')
+    $aRet = DllCall("kernel32.dll", "int", "SystemTimeToTzSpecificLocalTime", _
+        "ptr", 0, _
+        "ptr", DllStructGetPtr($SYSTEMTIME1), _
+        "ptr", DllStructGetPtr($SYSTEMTIME2))
+    If $aRet[0]=0 Then Return SetError(5, 0, 'Time Convert Error!')
+    $sRes &= StringFormat("%.2d",DllStructGetData($SYSTEMTIME2,1)) &'/'
+     $sRes &= StringFormat("%.2d",DllStructGetData($SYSTEMTIME2,2)) &'/'
+     $sRes &= StringFormat("%.2d",DllStructGetData($SYSTEMTIME2,4)) &' '
+     $sRes &= StringFormat("%.2d",DllStructGetData($SYSTEMTIME2,5)) &':'
+     $sRes &= StringFormat("%.2d",DllStructGetData($SYSTEMTIME2,6)) &':'
+     $sRes &= StringFormat("%.2d",DllStructGetData($SYSTEMTIME2,7))
+    Return $sRes
+EndFunc
 
 _GenerateUninstallList("HKEY_LOCAL_MACHINE", $show_loading_dialog_option)
 If $show_hkcu_option = 1 Then _GenerateUninstallList("HKEY_CURRENT_USER", $show_loading_dialog_option)
@@ -711,19 +746,19 @@ Func _GenerateUninstallList($sRoot = "HKEY_LOCAL_MACHINE", $iShow = 0, $hWnd = $
 		If $aPublisher = "" Then $aPublisher = $aKeyInfo[1]
 	
 		If $aUninstallString <> "" and $aName <> "" and _IsSystemUpdate($AppKey) <> 1 and _IsSystemComponent($AppKey) <> 1 Then 
-			Local $sDate = _WinAPI_RegGetTimeStamp($hRootName, "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\"& $AppKey)
+			Local $sDate = RegGetTimeStamp($hRootName, "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\"& $AppKey)
 			Local $LV_Item = GUICtrlCreateListViewItem($aName &"|"& $aPublisher &"|"& $aVersion &"|"& $aUninstallString &"|"& $AppKey &"|"& $Installer &"|"& $sRoot &"|"& $sDate, $uninstall_lv)
 			_EntrySetIcon($LV_Item, $AppKey, 0, $sRoot)
 		EndIf
 		
 		If $show_freename_option = 1 and $aName = "" Then 
-			Local $sDate = _WinAPI_RegGetTimeStamp($hRootName, "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\"& $AppKey)
+			Local $sDate = RegGetTimeStamp($hRootName, "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\"& $AppKey)
 			Local $LV_Item = GUICtrlCreateListViewItem($aName &"|"& $aPublisher &"|"& $aVersion &"|"& $aUninstallString &"|"& $AppKey &"|"& $Installer &"|"& $sRoot &"|"& $sDate, $uninstall_lv)
 			_EntrySetIcon($LV_Item, $AppKey, 0, $sRoot)
 		EndIf
 		
 		If $show_incorrect_option = 1 and $aUninstallString = "" Then
-			Local $sDate = _WinAPI_RegGetTimeStamp($hRootName, "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\"& $AppKey)
+			Local $sDate = RegGetTimeStamp($hRootName, "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\"& $AppKey)
 			Local $LV_Item = GUICtrlCreateListViewItem($aName & "|" & $aPublisher & "|" & $aVersion & "|" & $aUninstallString & "|" & $AppKey & "|" & $Installer &"|"& $sRoot &"|"& $sDate, $uninstall_lv)
 			_EntrySetIcon($LV_Item, $AppKey, 0, $sRoot)
 			If $allow_highlighting_option = 1 Then 
@@ -783,10 +818,10 @@ Func _SettingsDlg($hWnd = 0)
 	EndIf
 
 	Local $settings_dlg = GUICreate("Настройки", $iWidth, $iHeight, $iLeft, $iTop, $WS_CAPTION + $WS_SYSMENU, $WS_EX_DLGMODALFRAME, $hWnd)
-	Local $hIcon = _WinAPI_GetClassLong($settings_dlg, $GCL_HICON)
+	Local $hIcon = _WinAPI_GetClassLongEx($settings_dlg, $GCL_HICON)
 	_WinAPI_DestroyIcon($hIcon)
-	_WinAPI_SetClassLong($settings_dlg, $GCL_HICON, 0)
-	_WinAPI_SetClassLong($settings_dlg, $GCL_HICONSM, 0)
+	_WinAPI_SetClassLongEx($settings_dlg, $GCL_HICON, 0)
+	_WinAPI_SetClassLongEx($settings_dlg, $GCL_HICONSM, 0)
 
 	Local $save_btn = GUICtrlCreateButton("Сохранить", 246, 224, 75, 25, -1, $WS_EX_STATICEDGE)
 	DllCall("UxTheme.dll", "int", "SetWindowTheme", "hwnd", GUICtrlGetHandle(-1), "wstr", "", "wstr", "")
@@ -939,10 +974,10 @@ Func _PropertiesDlg($sEntry, $sRoot, $hWnd = $main_dlg)
 	
 	GUISetState(@SW_DISABLE, $hWnd)
 	Local $properties_dlg = GUICreate("Свойства", $iWidth, $iHeight, $iLeft, $iTop, $WS_CAPTION + $WS_SYSMENU, $WS_EX_DLGMODALFRAME, $hWnd)
-	Local $hIcon = _WinAPI_GetClassLong($properties_dlg, $GCL_HICON)
+	Local $hIcon = _WinAPI_GetClassLongEx($properties_dlg, $GCL_HICON)
 	_WinAPI_DestroyIcon($hIcon)
-	_WinAPI_SetClassLong($properties_dlg, $GCL_HICON, 0)
-	_WinAPI_SetClassLong($properties_dlg, $GCL_HICONSM, 0)
+	_WinAPI_SetClassLongEx($properties_dlg, $GCL_HICON, 0)
+	_WinAPI_SetClassLongEx($properties_dlg, $GCL_HICONSM, 0)
 	
 	GUICtrlCreateGroup("Свойства программы", 10, 5, 420, 150)
 	DllCall("UxTheme.dll", "int", "SetWindowTheme", "hwnd", GUICtrlGetHandle(-1), "wstr", "", "wstr", "")
@@ -1269,14 +1304,14 @@ Func _EntrySetIcon($hWnd, $sEntry, $sForced = 0, $sRoot = "HKEY_LOCAL_MACHINE")
 	If $search <> 0 Then 
 		$sIcon = StringRegExpReplace($aDisplayIcon, '^\s*(?>"([^"]*+)"|([^,]*?)\s*(?:,|$)).*+', "\1\2")
 		$iIcon = StringRegExpReplace($aDisplayIcon, ".*?(?>[\s,]([+-]?\d++)\s*|)$", "\1")+0
-		If _WinAPI_ExtractIcon($sIcon, _InvertIndex($iIcon), 0, 0, 0) Then
+		If _WinAPI_ExtractIcon($sIcon, _InvertIndex($iIcon), 0) Then
 			GuiCtrlSetImage($hWnd, $sIcon, _InvertIndex($iIcon))
 			Return 1
 		EndIf
 	EndIf
 		
 	If $aDisplayIcon <> "" Then $aDisplayIcon = StringReplace($aDisplayIcon, '"', "")
-	If FileExists($aDisplayIcon) and _WinAPI_ExtractIcon($aDisplayIcon, -1, 0, 0, 0) Then
+	If FileExists($aDisplayIcon) and _WinAPI_ExtractIcon($aDisplayIcon, -1, 0) Then
 		GuiCtrlSetImage($hWnd, $aDisplayIcon, -1)
 		Return 1
 	EndIf
@@ -1291,7 +1326,7 @@ Func _EntrySetIcon($hWnd, $sEntry, $sForced = 0, $sRoot = "HKEY_LOCAL_MACHINE")
 				$sFile = FileFindNextFile($hSearch)
 				If @error Then ExitLoop
 						
-				If Not StringInStr($sFile, "unins") And _WinAPI_ExtractIcon($sInstallerWindows & "\" & $sFile, -1, 0, 0, 0) Then
+				If Not StringInStr($sFile, "unins") And _WinAPI_ExtractIcon($sInstallerWindows & "\" & $sFile, -1, 0) Then
 					GuiCtrlSetImage($hWnd, $sInstallerWindows & "\" & $sFile, 0)
 					FileClose($hSearch)
 					Return 1
@@ -1306,7 +1341,7 @@ Func _EntrySetIcon($hWnd, $sEntry, $sForced = 0, $sRoot = "HKEY_LOCAL_MACHINE")
 				$sFile = FileFindNextFile($hSearch)
 				If @error Then ExitLoop
 						
-				If Not StringInStr($sFile, "unins") And _WinAPI_ExtractIcon($sInstallerAppData & "\" & $sFile, -1, 0, 0, 0) Then
+				If Not StringInStr($sFile, "unins") And _WinAPI_ExtractIcon($sInstallerAppData & "\" & $sFile, -1, 0) Then
 					GuiCtrlSetImage($hWnd, $sInstallerAppData & "\" & $sFile, 0)
 					FileClose($hSearch)
 					Return 1
@@ -1328,7 +1363,7 @@ Func _EntrySetIcon($hWnd, $sEntry, $sForced = 0, $sRoot = "HKEY_LOCAL_MACHINE")
 			While 1
 				$sFile = FileFindNextFile($hSearch)
 				If @error Then ExitLoop
-				If Not StringInStr($sFile, "unins") And Not StringInStr($sFile, "install") And Not StringInStr($sFile, "unwise") And Not StringInStr($sFile, "setup") And _WinAPI_ExtractIcon($aInstallLocation & "\" & $sFile, -1, 0, 0, 0) Then
+				If Not StringInStr($sFile, "unins") And Not StringInStr($sFile, "install") And Not StringInStr($sFile, "unwise") And Not StringInStr($sFile, "setup") And _WinAPI_ExtractIcon($aInstallLocation & "\" & $sFile, -1, 0) Then
 					GuiCtrlSetImage($hWnd, $aInstallLocation & "\" & $sFile, -1)
 					FileClose($hSearch)
 					Return 1
@@ -1337,7 +1372,7 @@ Func _EntrySetIcon($hWnd, $sEntry, $sForced = 0, $sRoot = "HKEY_LOCAL_MACHINE")
 		EndIf
 	EndIf
 		
-	If FileExists($sPath) and _WinAPI_ExtractIcon($sPath, -1, 0, 0, 0) Then
+	If FileExists($sPath) and _WinAPI_ExtractIcon($sPath, -1, 0) Then
 		GuiCtrlSetImage($hWnd, $sPath, -1)
 		Return 1
 	EndIf
