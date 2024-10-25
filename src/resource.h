@@ -1,0 +1,98 @@
+#ifndef __RESOURCE_H__
+#define __RESOURCE_H__
+
+#ifndef IDC_STATIC
+#define IDC_STATIC (-1)
+#endif
+
+// Acceleration
+#define IDA_MAIN 1
+
+// Menu Id
+#define IDM_MAIN 100
+#define IDM_LISTVIEW 101
+
+// Dialogs
+#define IDD_MAIN 100
+
+// Main Dlg
+#define IDC_LISTVIEW 102
+#define IDC_STATUSBAR 103
+
+// Settings Dlg
+#define IDC_NAV 104
+#define IDC_SAVE 105
+#define IDC_RESET 106
+#define IDC_CLOSE 107
+
+#define IDC_TITLE_GENERAL 108
+#define IDC_TITLE_LANGUAGE 109
+#define IDC_TITLE_CONNECTIONS 110
+#define IDC_TITLE_HIGHLIGHTING 111
+
+#define IDC_ALWAYSONTOP_CHK 112
+#define IDC_SKIPUACWARNING_CHK 113
+#define IDC_CHECKUPDATES_CHK 114
+
+#define IDC_LANGUAGE_HINT 115
+#define IDC_LANGUAGE 116
+
+// Main Menu
+#define IDM_SETTINGS 117
+#define IDM_EXIT 118
+#define IDM_FIND 119
+#define IDM_REFRESH 120
+#define IDM_ALWAYSONTOP_CHK 121
+#define IDM_DARKMODE_CHK 122
+#define IDM_SKIPUACWARNING_CHK 123
+#define IDM_CHECKUPDATES_CHK 124
+#define IDM_WEBSITE 125
+#define IDM_CHECKUPDATES 126
+#define IDM_DONATE 127
+#define IDM_ABOUT 128
+
+// Listview Menu
+#define IDM_OPEN 129
+#define IDM_EXPLORE 130
+#define IDM_COPY 131
+#define IDM_DELETE 132
+
+#define IDM_SELECT_ALL 133
+#define IDM_ZOOM 134
+
+#define IDX_LANGUAGE 1000
+
+// Strings
+#define IDS_FILE 1
+#define IDS_SETTINGS 2
+#define IDS_EXIT 3
+#define IDS_REFRESH 4
+#define IDS_LANGUAGE 5
+#define IDS_HELP 6
+#define IDS_WEBSITE 7
+#define IDS_CHECKUPDATES 8
+#define IDS_DONATE 9
+#define IDS_ABOUT 10
+#define IDS_COPY 11
+#define IDS_SELECT_ALL 12
+#define IDS_OPEN 13
+#define IDS_EXPLORE 14
+#define IDS_DELETE 15
+#define IDS_ALWAYSONTOP_CHK 16
+#define IDS_DARKMODE_CHK 17
+#define IDS_LOADONSTARTUP_CHK 18
+#define IDS_AUTOSIZECOLUMNS_CHK 19
+#define IDS_SKIPUACWARNING_CHK 20
+#define IDS_CHECKUPDATES_CHK 21
+#define IDS_LANGUAGE_HINT 22
+#define IDS_QUESTION_DELETE 23
+#define IDS_PROPERTIES 24
+#define IDS_RESET 25
+#define IDS_COMMENT 26
+
+// Icons
+#define IDI_MAIN 100
+#define IDI_ACTIVE IDI_MAIN
+#define IDI_INACTIVE 101
+
+#endif // __RESOURCE_H__
