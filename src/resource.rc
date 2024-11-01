@@ -131,6 +131,11 @@ BEGIN
 	IDS_DONATE "Give thanks!"
 	IDS_ABOUT "About"
 
+	IDS_NAME "Name"
+	IDS_VERSION "Version"
+	IDS_TIMESTAMP "Timestamp"
+	IDS_INSTALLER "Installer"
+
 	IDS_OPEN "Open registry"
 	IDS_EXPLORE "Explore location"
 	IDS_DELETE "Delete"

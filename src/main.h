@@ -19,24 +19,25 @@
 
 typedef enum _INSTALLER
 {
+	InstallerUnknown = 1,
 	WindowsInstaller,
-	InnoSetup,
-	Nsis,
-	CreateInstall,
+	InnoSetupInstaller,
+	NsisInstaller,
+	CreateInstallInstaller,
 	AstrumInstaller,
 	AgentixInstaller,
-	SmartInstallMaker,
-	SetupFactory,
+	SmartInstallMakerInstaller,
+	SetupFactoryInstaller,
 	ExcelsiorInstaller,
 	GhostInstaller,
 } INSTALLER, *PINSTALLER;
 
-typedef enum _TYPE
+typedef enum _INSTALLER_TYPE
 {
 	Installer,
 	SystemComponent,
 	SystemUpdate,
-} TYPE, *PTYPE;
+} INSTALLER_TYPE, *PINSTALLER_TYPE;
 
 typedef struct _STATIC_DATA
 {
@@ -49,13 +50,14 @@ typedef struct _ITEM_CONTEXT
 	PR_STRING file_path;
 	PR_STRING install_location;
 	PR_STRING uninstall_string;
+	PR_STRING uninstaller_path;
 	PR_STRING icon_path;
 	PR_STRING name;
 	PR_STRING version;
-	PR_STRING installer;
 	PR_STRING key_path;
 	HANDLE hroot;
 	LONG64 timestamp;
 	LONG icon_id;
+	INSTALLER_TYPE installer;
 	BOOLEAN is_hidden;
 } ITEM_CONTEXT, *PITEM_CONTEXT;
