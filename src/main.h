@@ -9,13 +9,14 @@
 #include "app.h"
 
 // ui
+#define LANG_SUBMENU 2
 #define LANG_MENU 5
 
 #define LV_HIDDEN_GROUP_ID 13
 
 // default colors
-#define LV_COLOR_SIGNED RGB (175, 228, 163)
-#define LV_COLOR_SYSTEM RGB(151, 196, 251)
+#define LV_COLOR_UPDATE RGB(0,108,208)
+#define LV_COLOR_SYSTEM_COMPONENT RGB(255,208,208)
 
 typedef enum _INSTALLER
 {
@@ -59,5 +60,7 @@ typedef struct _ITEM_CONTEXT
 	LONG64 timestamp;
 	LONG icon_id;
 	INSTALLER_TYPE installer;
+	BOOLEAN is_systemcomponent;
+	BOOLEAN is_update;
 	BOOLEAN is_hidden;
 } ITEM_CONTEXT, *PITEM_CONTEXT;
