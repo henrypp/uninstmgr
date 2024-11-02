@@ -36,6 +36,13 @@ BEGIN
 	END
 	POPUP " "
 	BEGIN
+		MENUITEM " ", IDM_SHOW_UPDATES
+		MENUITEM " ", IDM_SHOW_SYSTEM_COMPONENTS
+		MENUITEM SEPARATOR
+		MENUITEM " ", IDM_REFRESH
+	END
+	POPUP " "
+	BEGIN
 		MENUITEM " ", IDM_ALWAYSONTOP_CHK
 		MENUITEM " ", IDM_DARKMODE_CHK
 		MENUITEM " ", IDM_SKIPUACWARNING_CHK
@@ -88,11 +95,15 @@ END
 STRINGTABLE
 BEGIN
 	IDS_FILE "File"
+	IDS_VIEW "View"
 	IDS_SETTINGS "Settings"
+	IDS_HELP "Help"
+
 	IDS_EXIT "Exit"
 	IDS_REFRESH "Refresh"
 	IDS_LANGUAGE "Language"
-	IDS_HELP "Help"
+	IDS_SHOW_UPDATES "Show updated"
+	IDS_SHOW_SYSTEM_COMPONENTS "Show system components"
 	IDS_WEBSITE "Website"
 	IDS_CHECKUPDATES "Check for updates"
 	IDS_DONATE "Give thanks!"
@@ -116,8 +127,6 @@ BEGIN
 	IDS_AUTOSIZECOLUMNS_CHK "Autosize columns"
 	IDS_SKIPUACWARNING_CHK "Skip ""User Account Control"" prompt warning"
 	IDS_CHECKUPDATES_CHK "Periodically check for updates (recommended)"
-
-	IDS_LANGUAGE_HINT "Select language:"
 
 	IDS_QUESTION_DELETE "Delete selected item(s)?"
 END
