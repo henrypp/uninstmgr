@@ -103,6 +103,8 @@ BEGIN
 	IDS_TIMESTAMP "Timestamp"
 	IDS_INSTALLER "Installer"
 
+	IDS_STATUS_TOTAL "Installed apps"
+
 	IDS_OPEN "Open registry"
 	IDS_EXPLORE "Explore location"
 	IDS_DELETE "Delete"
