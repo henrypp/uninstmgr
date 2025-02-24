@@ -150,7 +150,7 @@ VOID _app_search_setvisible (
 {
 	BOOLEAN is_visible;
 
-	is_visible = _r_config_getboolean (L"IsShowSearchBar", TRUE);
+	is_visible = _r_config_getboolean (L"IsShowSearchBar", TRUE, NULL);
 
 	if (is_visible)
 	{
@@ -325,7 +325,7 @@ BOOLEAN _app_search_applyfilteritem (
 CleanupExit:
 
 	if (is_changed)
-		_r_listview_setitem_ex (hwnd, listview_id, item_id, 0, NULL, I_IMAGECALLBACK, I_GROUPIDCALLBACK, 0);
+		_r_listview_setitem (hwnd, listview_id, item_id, 0, NULL, I_IMAGECALLBACK, I_GROUPIDCALLBACK, 0);
 
 	return is_changed;
 }

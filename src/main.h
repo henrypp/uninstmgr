@@ -34,6 +34,7 @@ typedef enum _INSTALLER
 	SetupFactoryInstaller,
 	ExcelsiorInstaller,
 	GhostInstaller,
+	WixInstaller,
 } INSTALLER, *PINSTALLER;
 
 typedef enum _INSTALLER_TYPE
