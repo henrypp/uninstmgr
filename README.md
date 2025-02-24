@@ -17,8 +17,6 @@
 ### Description:
 Show and uninstall software on your computer.
 
-The lightweight application is less than a megabyte, and it is compatible with Windows 7 and higher operating systems. You can download either the installer or portable version.
-
 ```
 To activate portable mode, create "uninstmgr.ini" in application folder, or move it from "%APPDATA%\Henry++\Uninstall Manager".
 ```
