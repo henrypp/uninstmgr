@@ -34,14 +34,16 @@ typedef enum _INSTALLER
 	SetupFactoryInstaller,
 	ExcelsiorInstaller,
 	GhostInstaller,
+	MssInstaller,
 	WixInstaller,
+	BitrockInstaller,
 } INSTALLER, *PINSTALLER;
 
 typedef enum _INSTALLER_TYPE
 {
 	Installer,
-	SystemComponent,
 	SystemUpdate,
+	SystemComponent,
 } INSTALLER_TYPE, *PINSTALLER_TYPE;
 
 typedef struct _STATIC_DATA
