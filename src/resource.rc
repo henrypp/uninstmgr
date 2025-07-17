@@ -75,6 +75,7 @@ IDM_LISTVIEW MENU
 		MENUITEM SEPARATOR
 		MENUITEM " ", IDM_REFRESH
 		MENUITEM " ", IDM_COPY
+		MENUITEM " ", IDM_COPY_VALUE
 	}
 }
 
@@ -110,7 +111,7 @@ BEGIN
 	IDS_EXIT "Exit"
 	IDS_REFRESH "Refresh"
 	IDS_LANGUAGE "Language"
-	IDS_SHOW_UPDATES "Show updated"
+	IDS_SHOW_UPDATES "Show updates"
 	IDS_SHOW_SYSTEM_COMPONENTS "Show system components"
 	IDS_WEBSITE "Website"
 	IDS_CHECKUPDATES "Check for updates"
@@ -129,6 +130,7 @@ BEGIN
 	IDS_UNINSTALL "Uninstall"
 	IDS_DELETE "Delete key"
 	IDS_COPY "Copy"
+	IDS_COPY_VALUE "Copy value"
 
 	IDS_ALWAYSONTOP_CHK "Always on top"
 	IDS_DARKMODE_CHK "Use dark theme"
