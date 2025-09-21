@@ -23,20 +23,21 @@
 
 typedef enum _INSTALLER
 {
-	InstallerUnknown,
-	WindowsInstaller,
-	InnoSetupInstaller,
-	NsisInstaller,
-	CreateInstallInstaller,
-	AstrumInstaller,
+	InstallerUnknown = -1,
+	AdobeInstaller,
 	AgentixInstaller,
-	SmartInstallMakerInstaller,
-	SetupFactoryInstaller,
+	AstrumInstaller,
+	BitrockInstaller,
+	CreateInstallInstaller,
 	ExcelsiorInstaller,
 	GhostInstaller,
+	InnoSetupInstaller,
 	MssInstaller,
+	NsisInstaller,
+	SetupFactoryInstaller,
+	SmartInstallMakerInstaller,
+	WindowsInstaller,
 	WixInstaller,
-	BitrockInstaller,
 } INSTALLER, *PINSTALLER;
 
 typedef enum _INSTALLER_TYPE
@@ -67,9 +68,9 @@ typedef struct _ITEM_CONTEXT
 	PR_STRING uninstaller_path;
 	PR_STRING file_path;
 	PR_STRING icon_path;
-	PR_STRING name;
-	PR_STRING version;
 	PR_STRING key_path;
+	PR_STRING version;
+	PR_STRING name;
 	HANDLE hroot;
 	LONG64 timestamp;
 	LONG icon_id;
