@@ -133,6 +133,7 @@ BEGIN
 	IDS_INSTALLER "Installer"
 
 	IDS_STATUS_TOTAL "Installed apps"
+	IDS_STATUS_EMPTY "Empty."
 
 	IDS_OPEN "Open registry"
 	IDS_EXPLORE "Explore location"
