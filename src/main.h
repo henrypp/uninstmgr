@@ -23,7 +23,7 @@
 
 typedef enum _INSTALLER
 {
-	InstallerUnknown = -1,
+	InstallerUnknown = 0,
 	AdobeInstaller,
 	AgentixInstaller,
 	AstrumInstaller,
@@ -55,9 +55,9 @@ typedef struct _STATIC_DATA
 	HIMAGELIST himg_toolbar;
 	HBITMAP hbitmap_uac;
 	HFONT wnd_font;
-	HWND hrebar;
-	HWND htoolbar;
 	HWND hsearchbar;
+	HWND htoolbar;
+	HWND hrebar;
 	LONG icon_id;
 } STATIC_DATA, *PSTATIC_DATA;
 
@@ -66,8 +66,8 @@ typedef struct _ITEM_CONTEXT
 	PR_STRING install_location;
 	PR_STRING uninstall_string;
 	PR_STRING uninstaller_path;
+	PR_STRING display_icon;
 	PR_STRING file_path;
-	PR_STRING icon_path;
 	PR_STRING key_path;
 	PR_STRING version;
 	PR_STRING name;
