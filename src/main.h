@@ -32,10 +32,12 @@ typedef enum _INSTALLER
 	ExcelsiorInstaller,
 	GhostInstaller,
 	InnoSetupInstaller,
+	MicrosoftEdgeInstaller,
 	MssInstaller,
 	NsisInstaller,
 	SetupFactoryInstaller,
 	SmartInstallMakerInstaller,
+	VisualStudioInstaller,
 	WindowsInstaller,
 	WixInstaller,
 } INSTALLER, *PINSTALLER;
