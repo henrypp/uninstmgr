@@ -1,5 +1,5 @@
 // Uninstall Manager
-// Copyright (c) 2010-2025 Henry++
+// Copyright (c) 2010-2026 Henry++
 
 #include <global.h>
 
@@ -362,6 +362,17 @@ VOID NTAPI _app_getinfo (
 			DestroyIcon (hicon);
 		}
 	}
+	else if (context->uninstaller_path)
+	{
+		_r_path_geticon (&context->uninstaller_path->sr, &hicon, NULL);
+
+		if (hicon)
+		{
+			_r_imagelist_addicon (config.himg_listview, hicon, &context->icon_id);
+
+			DestroyIcon (hicon);
+		}
+	}
 	else
 	{
 		context->icon_id = config.icon_id;
@@ -407,7 +418,11 @@ VOID NTAPI _app_getinfo (
 
 					if (NT_SUCCESS (status))
 					{
-						if (_r_str_findstring2 (&string->sr, L"Inno Setup", TRUE) != SIZE_MAX)
+						if (_r_str_findstring2 (&string->sr, L"BitRock Installer", TRUE) != SIZE_MAX)
+						{
+							context->installer = BitrockInstaller;
+						}
+						else if (_r_str_findstring2 (&string->sr, L"Inno Setup", TRUE) != SIZE_MAX)
 						{
 							context->installer = InnoSetupInstaller;
 						}
@@ -553,9 +568,12 @@ VOID _app_refreshitems (
 	_In_ HWND hwnd
 )
 {
+	_r_listview_deleteallitems (hwnd, IDC_LISTVIEW);
+
 	_app_scansubkeys (hwnd, HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall");
-	_app_scansubkeys (hwnd, HKEY_CURRENT_USER, L"SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall");
 	_app_scansubkeys (hwnd, HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall");
+
+	_app_scansubkeys (hwnd, HKEY_CURRENT_USER, L"SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall");
 	_app_scansubkeys (hwnd, HKEY_LOCAL_MACHINE, L"SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall");
 
 	_app_listviewsort (hwnd, IDC_LISTVIEW, 0, false);
@@ -998,8 +1016,9 @@ INT_PTR CALLBACK DlgProc (
 				case NM_RCLICK:
 				{
 					LPNMITEMACTIVATE lpnmlv;
-					HMENU hmenu;
+					PITEM_CONTEXT context;
 					HMENU hsubmenu;
+					HMENU hmenu;
 					INT command_id;
 
 					lpnmlv = (LPNMITEMACTIVATE)lparam;
@@ -1020,12 +1039,26 @@ INT_PTR CALLBACK DlgProc (
 						_r_menu_setitemtext (hsubmenu, IDM_UNINSTALL, FALSE, _r_locale_getstring (IDS_UNINSTALL));
 						_r_menu_setitemtextformat (hsubmenu, IDM_DELETE, FALSE, L"%s\tDel", _r_locale_getstring (IDS_DELETE));
 						_r_menu_setitemtextformat (hsubmenu, IDM_EXPLORE, FALSE, L"%s\tCtrl+E", _r_locale_getstring (IDS_EXPLORE));
-						_r_menu_setitemtext (hsubmenu, IDM_OPEN, FALSE, _r_locale_getstring (IDS_OPEN));
-						_r_menu_setitemtext (hsubmenu, IDM_COPY, FALSE, _r_locale_getstring (IDS_COPY));
+						_r_menu_setitemtext (hsubmenu, IDM_EXPLORE_REGISTRY, FALSE, _r_locale_getstring (IDS_OPEN));
+						_r_menu_setitemtextformat (hsubmenu, IDM_COPY, FALSE, L"%s\tCtrl+C", _r_locale_getstring (IDS_COPY));
 						_r_menu_setitemtext (hsubmenu, IDM_COPY_VALUE, FALSE, _r_locale_getstring (IDS_COPY_VALUE));
 
+						context = (PITEM_CONTEXT)_r_listview_getitemlparam (hwnd, (INT)lpnmlv->hdr.idFrom, lpnmlv->iItem);
+
+						if (context)
+						{
+							if (context->hroot == HKEY_LOCAL_MACHINE)
+							{
+								if (config.hbitmap_uac)
+									_r_menu_setitembitmap (hsubmenu, IDM_DELETE, FALSE, config.hbitmap_uac);
+							}
+
+							if (_r_obj_isstringempty (context->install_location))
+								_r_menu_enableitem (hsubmenu, IDM_EXPLORE, FALSE, FALSE);
+						}
+
 						if (config.hbitmap_uac)
-							_r_menu_setitembitmap (hsubmenu, IDM_OPEN, FALSE, config.hbitmap_uac);
+							_r_menu_setitembitmap (hsubmenu, IDM_EXPLORE_REGISTRY, FALSE, config.hbitmap_uac);
 
 						command_id = _r_menu_popup (hsubmenu, hwnd, NULL, FALSE);
 
@@ -1350,7 +1383,7 @@ INT_PTR CALLBACK DlgProc (
 					break;
 				}
 
-				case IDM_OPEN:
+				case IDM_EXPLORE_REGISTRY:
 				{
 					PITEM_CONTEXT ptr_item;
 					HANDLE hkey;

@@ -41,8 +41,8 @@
 #define IDM_ABOUT 122
 
 // Listview Menu
-#define IDM_OPEN 123
-#define IDM_EXPLORE 124
+#define IDM_EXPLORE 123
+#define IDM_EXPLORE_REGISTRY 124
 #define IDM_COPY 125
 #define IDM_COPY_VALUE 126
 #define IDM_UNINSTALL 127
