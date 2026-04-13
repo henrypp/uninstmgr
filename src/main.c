@@ -380,11 +380,11 @@ VOID NTAPI _app_getinfo (
 
 	if (context->installer == InstallerUnknown && context->uninstaller_path)
 	{
-		status = _r_sys_loadlibraryasresource (&context->uninstaller_path->sr, &hinst);
+		status = _r_sys_loadlibraryasresource (&hinst, &context->uninstaller_path->sr);
 
 		if (NT_SUCCESS (status))
 		{
-			status = _r_res_loadresource (hinst, RT_VERSION, MAKEINTRESOURCE (VS_VERSION_INFO), 0, &storage);
+			status = _r_res_loadresource (&storage, hinst, RT_VERSION, MAKEINTRESOURCE (VS_VERSION_INFO), 0);
 
 			if (NT_SUCCESS (status))
 			{
@@ -410,11 +410,11 @@ VOID NTAPI _app_getinfo (
 
 			if (context->installer == InstallerUnknown)
 			{
-				status = _r_res_loadresource (hinst, RT_MANIFEST, MAKEINTRESOURCE (1), 0, &storage);
+				status = _r_res_loadresource (&storage, hinst, RT_MANIFEST, MAKEINTRESOURCE (1), 0);
 
 				if (NT_SUCCESS (status))
 				{
-					status = _r_str_multibyte2unicode ((PR_BYTEREF)&storage, &string);
+					status = _r_str_multibyte2unicode (&string, (PR_BYTEREF)&storage);
 
 					if (NT_SUCCESS (status))
 					{
@@ -534,7 +534,7 @@ VOID _app_scansubkeys (
 	ULONG index = 0;
 	NTSTATUS status;
 
-	status = _r_reg_openkey (hroot, key_path, 0, KEY_READ, &hkey);
+	status = _r_reg_openkey (&hkey, hroot, key_path, 0, KEY_READ);
 
 	if (NT_SUCCESS (status))
 	{
@@ -546,7 +546,7 @@ VOID _app_scansubkeys (
 			if (status != STATUS_SUCCESS)
 				break;
 
-			status = _r_reg_openkey (hkey, name->buffer, 0, KEY_READ, &hsubkey);
+			status = _r_reg_openkey (&hsubkey, hkey, name->buffer, 0, KEY_READ);
 
 			if (NT_SUCCESS (status))
 			{
@@ -739,11 +739,11 @@ VOID _app_toolbar_init (
 	{
 		width = _r_dc_getsystemmetrics (SM_CXSMICON, dpi_value);
 
-		_r_imagelist_create (width, width, ILC_COLOR32 | ILC_HIGHQUALITYSCALE, 0, 5, &config.himg_toolbar);
+		_r_imagelist_create (&config.himg_toolbar, width, width, ILC_COLOR32 | ILC_HIGHQUALITYSCALE, 0, 5);
 
 		for (ULONG_PTR i = 0; i < RTL_NUMBER_OF (images_id); i++)
 		{
-			status = _r_res_loadimage (_r_sys_getimagebase (), L"PNG", MAKEINTRESOURCE (images_id[i]), &GUID_ContainerFormatPng, width, width, &hbitmap);
+			status = _r_res_loadimage (&hbitmap, _r_sys_getimagebase (), L"PNG", MAKEINTRESOURCE (images_id[i]), &GUID_ContainerFormatPng, width, width);
 
 			if (NT_SUCCESS (status))
 			{
@@ -849,7 +849,7 @@ VOID _app_initialize (
 
 	icon_size = _r_dc_getsystemmetrics (SM_CXSMICON, dpi_value);
 
-	_r_imagelist_create (icon_size, icon_size, ILC_COLOR32 | ILC_HIGHQUALITYSCALE, 0, 5, &config.himg_listview);
+	_r_imagelist_create (&config.himg_listview, icon_size, icon_size, ILC_COLOR32 | ILC_HIGHQUALITYSCALE, 0, 5);
 
 	_r_listview_setimagelist (hwnd, IDC_LISTVIEW, config.himg_listview);
 
@@ -1396,7 +1396,7 @@ INT_PTR CALLBACK DlgProc (
 
 						if (ptr_item)
 						{
-							status = _r_reg_openkey (ptr_item->hroot, ptr_item->key_path->buffer, 0, KEY_READ, &hkey);
+							status = _r_reg_openkey (&hkey, ptr_item->hroot, ptr_item->key_path->buffer, 0, KEY_READ);
 
 							if (NT_SUCCESS (status))
 							{
