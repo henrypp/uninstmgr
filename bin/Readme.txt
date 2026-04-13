@@ -13,4 +13,4 @@ To activate portable mode, create "autoruns2.ini" in application folder, or move
 Website: https://github.com/henrypp
 Support: sforce5@mail.ru
 
-(c) 2010-2025 Henry++
+(c) 2010-2026 Henry++

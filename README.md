@@ -42,4 +42,4 @@ Binaries have GPG signature `uninstmgr.exe.sig` in application folder.
 - Website: [github.com/henrypp](https://github.com/henrypp)
 - Support: sforce5@mail.ru
 ---
-(c) 2010-2025 Henry++
+(c) 2010-2026 Henry++
