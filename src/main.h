@@ -8,6 +8,9 @@
 #include "resource.h"
 #include "app.h"
 
+#define SZ_TAB L"    "
+#define SZ_CRLF L"\r\n"
+
 // ui
 #define LANG_SUBMENU 2
 #define LANG_MENU 5

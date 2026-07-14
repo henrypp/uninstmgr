@@ -329,7 +329,7 @@ VOID NTAPI _app_getinfo (
 	R_STRINGREF sr2;
 	R_STRINGREF sr;
 	HICON hicon = NULL;
-	PVOID hinst;
+	HINSTANCE hinst;
 	LCID lcid;
 	ULONG_PTR pos;
 	NTSTATUS status;
@@ -414,7 +414,7 @@ VOID NTAPI _app_getinfo (
 
 				if (NT_SUCCESS (status))
 				{
-					status = _r_str_multibyte2unicode (&string, (PR_BYTEREF)&storage);
+					status = _r_str_multibyte2unicode ((PR_BYTEREF)&storage, &string);
 
 					if (NT_SUCCESS (status))
 					{
@@ -509,6 +509,43 @@ VOID _app_additem (
 	_r_listview_additem (hwnd, IDC_LISTVIEW, INT_ERROR, LPSTR_TEXTCALLBACK, I_IMAGECALLBACK, I_GROUPIDCALLBACK, (LPARAM)context);
 
 	_r_workqueue_queueitem (&workqueue, &_app_getinfo, context);
+}
+
+VOID _app_gettooltipbylparam (
+	_Inout_ LPNMLVGETINFOTIPW lpnmlv,
+	_In_ PITEM_CONTEXT ptr_item
+)
+{
+	R_STRINGBUILDER sb;
+
+	_r_obj_initializestringbuilder (&sb, 0x20);
+
+	// key_path
+	if (ptr_item->key_path)
+	{
+		_r_obj_appendstringbuilder (&sb, SZ_TAB);
+		_r_obj_appendstringbuilder2 (&sb, &ptr_item->key_path->sr);
+		_r_obj_appendstringbuilder (&sb, SZ_CRLF);
+	}
+
+	// file path
+	if (ptr_item->file_path)
+	{
+		_r_obj_appendstringbuilder (&sb, SZ_TAB);
+		_r_obj_appendstringbuilder2 (&sb, &ptr_item->file_path->sr);
+		_r_obj_appendstringbuilder (&sb, SZ_CRLF);
+	}
+
+	_r_str_copy (lpnmlv->pszText, lpnmlv->cchTextMax, _r_obj_finalstringbuilder (&sb)->buffer);
+
+	_r_obj_deletestringbuilder (&sb);
+}
+
+VOID _app_refreshstatus (
+	_In_ HWND hwnd
+)
+{
+	_r_status_settextformat (hwnd, IDC_STATUSBAR, 0, L"Total items %d", _r_listview_getitemcount (hwnd, IDC_LISTVIEW));
 }
 
 VOID _app_resizecolumns (
@@ -854,7 +891,7 @@ VOID _app_initialize (
 	_r_listview_setimagelist (hwnd, IDC_LISTVIEW, config.himg_listview);
 
 	// initialize icon
-	status = _r_path_search (NULL, &msiexec_sr, NULL, &path);
+	status = _r_path_search (&path, NULL, &msiexec_sr, NULL);
 
 	if (NT_SUCCESS (status))
 	{
@@ -871,7 +908,7 @@ VOID _app_initialize (
 	}
 
 	// configure listview
-	_r_listview_setstyle (hwnd, IDC_LISTVIEW, LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP | LVS_EX_LABELTIP, TRUE);
+	_r_listview_setstyle (hwnd, IDC_LISTVIEW, LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP | LVS_EX_LABELTIP | LVS_EX_DOUBLEBUFFER, TRUE);
 
 	_r_listview_addcolumn (hwnd, IDC_LISTVIEW, 0, NULL, 10, LVCFMT_LEFT);
 	_r_listview_addcolumn (hwnd, IDC_LISTVIEW, 1, NULL, 10, LVCFMT_LEFT);
@@ -1063,7 +1100,7 @@ INT_PTR CALLBACK DlgProc (
 						command_id = _r_menu_popup (hsubmenu, hwnd, NULL, FALSE);
 
 						if (command_id)
-							_r_ctrl_sendcommand (hwnd, command_id, (LPARAM)lpnmlv->iSubItem);
+							_r_wnd_sendcommand (hwnd, command_id, (LPARAM)lpnmlv->iSubItem);
 					}
 
 					DestroyMenu (hmenu);
@@ -1121,6 +1158,24 @@ INT_PTR CALLBACK DlgProc (
 					return result;
 				}
 
+				case LVN_GETINFOTIP:
+				{
+					LPNMLVGETINFOTIPW lpnmlv;
+					PITEM_CONTEXT ptr_item;
+
+					lpnmlv = (LPNMLVGETINFOTIPW)lparam;
+
+					if (lpnmlv->hdr.idFrom != IDC_LISTVIEW || lpnmlv->iItem == INT_ERROR)
+						break;
+
+					ptr_item = (PITEM_CONTEXT)_r_listview_getitemlparam (hwnd, IDC_LISTVIEW, lpnmlv->iItem);
+
+					if (ptr_item)
+						_app_gettooltipbylparam (lpnmlv, ptr_item);
+
+					break;
+				}
+
 				case NM_DBLCLK:
 				{
 					LPNMITEMACTIVATE lpnmlv;
@@ -1130,7 +1185,7 @@ INT_PTR CALLBACK DlgProc (
 					if (lpnmlv->iItem == INT_ERROR)
 						break;
 
-					_r_ctrl_sendcommand (hwnd, IDM_EXPLORE, 0);
+					_r_wnd_sendcommand (hwnd, IDM_EXPLORE, 0);
 
 					break;
 				}
@@ -1138,16 +1193,21 @@ INT_PTR CALLBACK DlgProc (
 				case LVN_COLUMNCLICK:
 				{
 					LPNMLISTVIEW lpnmlv;
-					INT ctrl_id;
 
 					lpnmlv = (LPNMLISTVIEW)lparam;
-					ctrl_id = (INT)(INT_PTR)lpnmlv->hdr.idFrom;
 
-					if (ctrl_id != IDC_LISTVIEW)
+					if (lpnmlv->hdr.idFrom != IDC_LISTVIEW || lpnmlv->iItem == INT_ERROR)
 						break;
 
-					_app_listviewsort (hwnd, ctrl_id, lpnmlv->iSubItem, TRUE);
+					_app_listviewsort (hwnd, IDC_LISTVIEW, lpnmlv->iSubItem, TRUE);
 
+					break;
+				}
+
+				case LVN_INSERTITEM:
+				case LVN_DELETEALLITEMS:
+				{
+					_app_refreshstatus (hwnd);
 					break;
 				}
 
@@ -1161,6 +1221,7 @@ INT_PTR CALLBACK DlgProc (
 						_r_obj_dereference ((PVOID)lpnmlv->lParam);
 
 					_app_resizecolumns (hwnd);
+					_app_refreshstatus (hwnd);
 
 					break;
 				}
