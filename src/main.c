@@ -456,14 +456,21 @@ VOID _app_additem (
 {
 	PR_STRING display_icon, display_name, display_version, install_location, uninstall_string;
 	PITEM_CONTEXT context;
+	INSTALLER_TYPE type = Installer;
 	R_STRINGREF sr;
 	ULONG value;
 	NTSTATUS status;
 
-	if (_app_issystemcomponent (hkey) && !_r_config_getboolean (L"IsShowComponents", FALSE, NULL))
+	if (_app_issystemupdate (hkey))
+		type = SystemUpdate;
+
+	if (_app_issystemcomponent (hkey))
+		type = SystemComponent;
+
+	if (type == SystemUpdate && !_r_config_getboolean (L"IsShowUpdates", FALSE, NULL))
 		return;
 
-	if (_app_issystemupdate (hkey) && !_r_config_getboolean (L"IsShowUpdates", FALSE, NULL))
+	if (type == SystemComponent && !_r_config_getboolean (L"IsShowComponents", FALSE, NULL))
 		return;
 
 	status = _r_reg_querystring (hkey, L"DisplayName", &display_name, NULL);
@@ -490,6 +497,7 @@ VOID _app_additem (
 	context->install_location = install_location;
 	context->uninstall_string = uninstall_string;
 	context->timestamp = timestamp;
+	context->type = type;
 
 	if (context->uninstall_string)
 	{
@@ -1143,21 +1151,22 @@ INT_PTR CALLBACK DlgProc (
 							if (!ptr_item)
 								break;
 
-							if (ptr_item->type == SystemUpdate)
+							if (_r_obj_isstringempty (ptr_item->name) || _r_obj_isstringempty (ptr_item->uninstall_string))
 							{
-								new_clr = LV_COLOR_UPDATE;
+								new_clr = LV_COLOR_SYSTEM_INVALID;
 							}
 							else if (ptr_item->type == SystemComponent)
 							{
 								new_clr = LV_COLOR_SYSTEM_COMPONENT;
 							}
-							else if (_r_obj_isstringempty (ptr_item->name))
+							else if (ptr_item->type == SystemUpdate)
 							{
-								new_clr = LV_COLOR_SYSTEM_INVALID;
+								new_clr = LV_COLOR_UPDATE;
 							}
-
-							if (!new_clr)
+							else
+							{
 								break;
+							}
 
 							lpnmlv->clrText = _r_theme_isenabled () ? WND_TEXT_CLR : _r_dc_getcolorbrightness (new_clr);
 							lpnmlv->clrTextBk = new_clr;

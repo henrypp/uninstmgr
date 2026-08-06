@@ -18,10 +18,10 @@
 #define REBAR_TOOLBAR_ID 0
 #define REBAR_SEARCH_ID 1
 
-#define LV_HIDDEN_GROUP_ID 666
+#define LV_HIDDEN_GROUP_ID GENERAL_ID
 
 // default colors
-#define LV_COLOR_UPDATE RGB(0, 0x6C, 0xD0)
+#define LV_COLOR_UPDATE RGB(0x00, 0x6C, 0xD0)
 #define LV_COLOR_SYSTEM_COMPONENT RGB(0xFF, 0xD0, 0xD0)
 #define LV_COLOR_SYSTEM_INVALID RGB(0xE3, 0x20, 0x00)
 
@@ -80,7 +80,7 @@ typedef struct _ITEM_CONTEXT
 	HANDLE hroot;
 	LONG64 timestamp;
 	LONG icon_id;
-	INSTALLER installer;
 	INSTALLER_TYPE type;
+	INSTALLER installer;
 	BOOLEAN is_hidden;
 } ITEM_CONTEXT, *PITEM_CONTEXT;
