@@ -117,7 +117,7 @@ VOID _app_search_themechanged (
 	_app_search_initializeimages (context, hwnd);
 
 	// Reset the client area margins.
-	_r_ctrl_settextmargin (hwnd, 0, 0, 0);
+	_r_edit_setmargin (hwnd, 0, 0, 0);
 
 	// Refresh the non-client area.
 	SetWindowPos (hwnd, NULL, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
