@@ -454,12 +454,8 @@ VOID _app_additem (
 	_In_ LONG64 timestamp
 )
 {
+	PR_STRING display_icon, display_name, display_version, install_location, uninstall_string;
 	PITEM_CONTEXT context;
-	PR_STRING uninstall_string;
-	PR_STRING install_location;
-	PR_STRING display_version;
-	PR_STRING display_name;
-	PR_STRING display_icon;
 	R_STRINGREF sr;
 	ULONG value;
 	NTSTATUS status;
@@ -472,19 +468,22 @@ VOID _app_additem (
 
 	status = _r_reg_querystring (hkey, L"DisplayName", &display_name, NULL);
 
-	if (!NT_SUCCESS (status))
+	if (!_r_config_getboolean (L"IsShowIncorrectItems", FALSE, NULL) && !NT_SUCCESS (status))
+		return;
+
+	status = _r_reg_querystring (hkey, L"UninstallString", &uninstall_string, NULL);
+
+	if (!_r_config_getboolean (L"IsShowIncorrectItems", FALSE, NULL) && !NT_SUCCESS (status))
 		return;
 
 	_r_reg_querystring (hkey, L"DisplayIcon", &display_icon, NULL);
 	_r_reg_querystring (hkey, L"DisplayVersion", &display_version, NULL);
 	_r_reg_querystring (hkey, L"InstallLocation", &install_location, NULL);
-	_r_reg_querystring (hkey, L"UninstallString", &uninstall_string, NULL);
 
 	context = _r_obj_allocate (sizeof (ITEM_CONTEXT), &_app_dereferencecontext);
 
-	context->hroot = hroot;
 	context->key_path = _r_format_string (L"%s\\%s", key_path, name->buffer);
-
+	context->hroot = hroot;
 	context->name = display_name;
 	context->version = display_version;
 	context->display_icon = display_icon;
@@ -518,7 +517,7 @@ VOID _app_gettooltipbylparam (
 {
 	R_STRINGBUILDER sb;
 
-	_r_obj_initializestringbuilder (&sb, 0x20);
+	_r_obj_initializestringbuilder (&sb, 0);
 
 	// key_path
 	if (ptr_item->key_path)
@@ -959,6 +958,7 @@ INT_PTR CALLBACK DlgProc (
 			{
 				_r_menu_checkitem (hmenu, IDM_SHOW_UPDATES, 0, MF_BYCOMMAND, _r_config_getboolean (L"IsShowUpdates", FALSE, NULL));
 				_r_menu_checkitem (hmenu, IDM_SHOW_SYSTEM_COMPONENTS, 0, MF_BYCOMMAND, _r_config_getboolean (L"IsShowComponents", FALSE, NULL));
+				_r_menu_checkitem (hmenu, IDM_SHOW_INCORRECT_ITEMS, 0, MF_BYCOMMAND, _r_config_getboolean (L"IsShowIncorrectItems", FALSE, NULL));
 				_r_menu_checkitem (hmenu, IDM_ALWAYSONTOP_CHK, 0, MF_BYCOMMAND, _r_config_getboolean (L"AlwaysOnTop", FALSE, NULL));
 				_r_menu_checkitem (hmenu, IDM_DARKMODE_CHK, 0, MF_BYCOMMAND, _r_theme_isenabled ());
 				_r_menu_checkitem (hmenu, IDM_SKIPUACWARNING_CHK, 0, MF_BYCOMMAND, _r_skipuac_isenabled ());
@@ -987,6 +987,7 @@ INT_PTR CALLBACK DlgProc (
 				_r_menu_setitemtextformat (hmenu, IDM_EXIT, FALSE, L"%s...\tEsc", _r_locale_getstring (IDS_EXIT));
 				_r_menu_setitemtext (hmenu, IDM_SHOW_UPDATES, FALSE, _r_locale_getstring (IDS_SHOW_UPDATES));
 				_r_menu_setitemtext (hmenu, IDM_SHOW_SYSTEM_COMPONENTS, FALSE, _r_locale_getstring (IDS_SHOW_SYSTEM_COMPONENTS));
+				_r_menu_setitemtext (hmenu, IDM_SHOW_INCORRECT_ITEMS, FALSE, _r_locale_getstring (IDS_SHOW_INCORRECT_ITEMS));
 				_r_menu_setitemtextformat (hmenu, IDM_REFRESH, FALSE, L"%s...\tF5", _r_locale_getstring (IDS_REFRESH));
 				_r_menu_setitemtext (hmenu, IDM_ALWAYSONTOP_CHK, FALSE, _r_locale_getstring (IDS_ALWAYSONTOP_CHK));
 				_r_menu_setitemtext (hmenu, IDM_DARKMODE_CHK, FALSE, _r_locale_getstring (IDS_DARKMODE_CHK));
@@ -1126,31 +1127,45 @@ INT_PTR CALLBACK DlgProc (
 							break;
 						}
 
-						//case CDDS_ITEMPREPAINT:
-						//{
-						//	PITEM_CONTEXT ptr_item;
-						//	COLORREF new_clr;
-						//
-						//	if (lpnmlv->dwItemType != LVCDI_ITEM)
-						//		break;
-						//
-						//	if (!_r_config_getboolean (L"IsEnableHighlighting", TRUE, NULL))
-						//		break;
-						//
-						//	ptr_item = (PITEM_CONTEXT)lpnmlv->nmcd.lItemlParam;
-						//
-						//	if (!ptr_item)
-						//		break;
-						//
-						//	new_clr = ptr_item->clr;
-						//
-						//	lpnmlv->clrTextBk = new_clr;
-						//	lpnmlv->clrText = _r_theme_isenabled () ? WND_TEXT_CLR : _r_dc_getcolorbrightness (new_clr);
-						//
-						//	result = CDRF_NEWFONT;
-						//
-						//	break;
-						//}
+						case CDDS_ITEMPREPAINT:
+						{
+							PITEM_CONTEXT ptr_item;
+							COLORREF new_clr = 0;
+
+							if (lpnmlv->dwItemType != LVCDI_ITEM)
+								break;
+
+							if (!_r_config_getboolean (L"IsEnableHighlighting", TRUE, NULL))
+								break;
+
+							ptr_item = (PITEM_CONTEXT)lpnmlv->nmcd.lItemlParam;
+
+							if (!ptr_item)
+								break;
+
+							if (ptr_item->type == SystemUpdate)
+							{
+								new_clr = LV_COLOR_UPDATE;
+							}
+							else if (ptr_item->type == SystemComponent)
+							{
+								new_clr = LV_COLOR_SYSTEM_COMPONENT;
+							}
+							else if (_r_obj_isstringempty (ptr_item->name))
+							{
+								new_clr = LV_COLOR_SYSTEM_INVALID;
+							}
+
+							if (!new_clr)
+								break;
+
+							lpnmlv->clrTextBk = new_clr;
+							lpnmlv->clrText = _r_theme_isenabled () ? WND_TEXT_CLR : _r_dc_getcolorbrightness (new_clr);
+
+							result = CDRF_NEWFONT;
+
+							break;
+						}
 					}
 
 					SetWindowLongPtrW (hwnd, DWLP_MSGRESULT, result);
@@ -1308,12 +1323,9 @@ INT_PTR CALLBACK DlgProc (
 
 				case IDM_SHOW_UPDATES:
 				{
-					BOOLEAN new_val;
-
-					new_val = !_r_config_getboolean (L"IsShowUpdates", FALSE, NULL);
+					BOOLEAN new_val = _r_config_invertboolean (L"IsShowUpdates", FALSE, NULL);
 
 					_r_menu_checkitem (GetMenu (hwnd), ctrl_id, 0, MF_BYCOMMAND, new_val);
-					_r_config_setboolean (L"IsShowUpdates", new_val, NULL);
 
 					_app_refreshitems (hwnd);
 
@@ -1322,12 +1334,20 @@ INT_PTR CALLBACK DlgProc (
 
 				case IDM_SHOW_SYSTEM_COMPONENTS:
 				{
-					BOOLEAN new_val;
-
-					new_val = !_r_config_getboolean (L"IsShowComponents", FALSE, NULL);
+					BOOLEAN new_val = _r_config_invertboolean (L"IsShowComponents", FALSE, NULL);
 
 					_r_menu_checkitem (GetMenu (hwnd), ctrl_id, 0, MF_BYCOMMAND, new_val);
-					_r_config_setboolean (L"IsShowComponents", new_val, NULL);
+
+					_app_refreshitems (hwnd);
+
+					break;
+				}
+
+				case IDM_SHOW_INCORRECT_ITEMS:
+				{
+					BOOLEAN new_val = _r_config_invertboolean (L"IsShowIncorrectItems", FALSE, NULL);
+
+					_r_menu_checkitem (GetMenu (hwnd), ctrl_id, 0, MF_BYCOMMAND, new_val);
 
 					_app_refreshitems (hwnd);
 
@@ -1342,12 +1362,9 @@ INT_PTR CALLBACK DlgProc (
 
 				case IDM_ALWAYSONTOP_CHK:
 				{
-					BOOLEAN new_val;
-
-					new_val = !_r_config_getboolean (L"AlwaysOnTop", FALSE, NULL);
+					BOOLEAN new_val = _r_config_invertboolean (L"AlwaysOnTop", FALSE, NULL);
 
 					_r_menu_checkitem (GetMenu (hwnd), ctrl_id, 0, MF_BYCOMMAND, new_val);
-					_r_config_setboolean (L"AlwaysOnTop", new_val, NULL);
 
 					_r_wnd_top (hwnd, new_val);
 
@@ -1366,9 +1383,7 @@ INT_PTR CALLBACK DlgProc (
 
 				case IDM_SKIPUACWARNING_CHK:
 				{
-					BOOLEAN new_val;
-
-					new_val = !_r_skipuac_isenabled ();
+					BOOLEAN new_val = !_r_skipuac_isenabled ();
 
 					_r_skipuac_enable (hwnd, new_val);
 					_r_menu_checkitem (GetMenu (hwnd), ctrl_id, 0, MF_BYCOMMAND, _r_skipuac_isenabled ());
@@ -1378,9 +1393,7 @@ INT_PTR CALLBACK DlgProc (
 
 				case IDM_CHECKUPDATES_CHK:
 				{
-					BOOLEAN new_val;
-
-					new_val = !_r_update_isenabled (FALSE);
+					BOOLEAN new_val = !_r_update_isenabled (FALSE);
 
 					_r_menu_checkitem (GetMenu (hwnd), ctrl_id, 0, MF_BYCOMMAND, new_val);
 					_r_update_enable (new_val);
@@ -1478,7 +1491,7 @@ INT_PTR CALLBACK DlgProc (
 					INT column_count;
 					INT item_id = INT_ERROR;
 
-					_r_obj_initializestringbuilder (&sb, 256);
+					_r_obj_initializestringbuilder (&sb, 0);
 
 					column_count = _r_listview_getcolumncount (hwnd, IDC_LISTVIEW);
 
@@ -1522,7 +1535,7 @@ INT_PTR CALLBACK DlgProc (
 
 					column_id = (INT)lparam;
 
-					_r_obj_initializestringbuilder (&sb, 256);
+					_r_obj_initializestringbuilder (&sb, 0);
 
 					while ((item_id = _r_listview_getnextselected (hwnd, IDC_LISTVIEW, item_id)) != INT_ERROR)
 					{
