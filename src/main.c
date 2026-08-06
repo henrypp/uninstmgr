@@ -1159,8 +1159,8 @@ INT_PTR CALLBACK DlgProc (
 							if (!new_clr)
 								break;
 
-							lpnmlv->clrTextBk = new_clr;
 							lpnmlv->clrText = _r_theme_isenabled () ? WND_TEXT_CLR : _r_dc_getcolorbrightness (new_clr);
+							lpnmlv->clrTextBk = new_clr;
 
 							result = CDRF_NEWFONT;
 
