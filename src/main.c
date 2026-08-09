@@ -197,16 +197,10 @@ INT CALLBACK _app_listviewcompare_callback (
 	_In_ LPARAM lparam
 )
 {
-	WCHAR config_name[128];
-	PR_STRING item_text_1;
-	PR_STRING item_text_2;
-	HWND hlistview;
-	HWND hwnd;
-	INT listview_id;
-	INT column_id;
-	INT result = 0;
-	INT item1;
-	INT item2;
+	PR_STRING item_text_1, item_text_2;
+	WCHAR config_name[0x80];
+	HWND hwnd, hlistview;
+	INT column_id, item1, item2, listview_id, result = 0;
 	BOOLEAN is_descend;
 
 	item1 = (INT)(INT_PTR)lparam1;
@@ -251,7 +245,7 @@ VOID _app_listviewsort (
 	_In_ BOOLEAN is_notifycode
 )
 {
-	WCHAR config_name[128];
+	WCHAR config_name[0x80];
 	INT column_count;
 	BOOLEAN is_descend;
 
@@ -325,16 +319,13 @@ VOID NTAPI _app_getinfo (
 	PITEM_CONTEXT context;
 	R_STORAGE storage;
 	PR_STRING string;
-	R_STRINGREF sr1;
-	R_STRINGREF sr2;
-	R_STRINGREF sr;
+	R_STRINGREF sr, sr1, sr2;
 	HICON hicon = NULL;
 	HINSTANCE hinst;
 	LCID lcid;
-	ULONG_PTR pos;
 	NTSTATUS status;
 
-	context = arglist;
+	context = (PITEM_CONTEXT)arglist;
 
 	if (context->display_icon)
 	{
@@ -343,12 +334,9 @@ VOID NTAPI _app_getinfo (
 		if (_r_fs_isdirectory (&sr) && context->uninstaller_path)
 			_r_obj_initializestringref2 (&sr, &context->uninstaller_path->sr);
 
-		pos = _r_str_findchar (&sr, L',', FALSE);
-
-		if (pos != SIZE_MAX)
+		if (_r_str_splitatchar (&sr, L',', &sr1, &sr2))
 		{
-			if (_r_str_splitatchar (&sr, L',', &sr1, &sr2))
-				hicon = _r_sys_extracticon (&sr1, _r_str_tolong (&sr2), 16);
+			hicon = _r_sys_extracticon (&sr1, _r_str_tolong (&sr2), GetSystemMetrics (SM_CXSMICON));
 		}
 		else
 		{
@@ -448,7 +436,7 @@ VOID NTAPI _app_getinfo (
 VOID _app_additem (
 	_In_ HWND hwnd,
 	_In_ HANDLE hroot,
-	_In_ LPWSTR key_path,
+	_In_ LPCWSTR key_path,
 	_In_ PR_STRING name,
 	_In_ HANDLE hkey,
 	_In_ LONG64 timestamp
@@ -458,13 +446,13 @@ VOID _app_additem (
 	PITEM_CONTEXT context;
 	INSTALLER_TYPE type = Installer;
 	R_STRINGREF sr;
-	ULONG value;
+	ULONG value, version;
 	NTSTATUS status;
 
 	if (_app_issystemupdate (hkey))
 		type = SystemUpdate;
 
-	if (_app_issystemcomponent (hkey))
+	if (type == Installer && _app_issystemcomponent (hkey))
 		type = SystemComponent;
 
 	if (type == SystemUpdate && !_r_config_getboolean (L"IsShowUpdates", FALSE, NULL))
@@ -478,20 +466,34 @@ VOID _app_additem (
 	if (!_r_config_getboolean (L"IsShowIncorrectItems", FALSE, NULL) && !NT_SUCCESS (status))
 		return;
 
+	if (_r_obj_isstringempty (display_name))
+		_r_obj_clearreference ((PVOID_PTR)&display_name);
+
 	status = _r_reg_querystring (hkey, L"UninstallString", &uninstall_string, NULL);
 
 	if (!_r_config_getboolean (L"IsShowIncorrectItems", FALSE, NULL) && !NT_SUCCESS (status))
 		return;
 
+	if (_r_obj_isstringempty (uninstall_string))
+		_r_obj_clearreference ((PVOID_PTR)&uninstall_string);
+
 	_r_reg_querystring (hkey, L"DisplayIcon", &display_icon, NULL);
 	_r_reg_querystring (hkey, L"DisplayVersion", &display_version, NULL);
 	_r_reg_querystring (hkey, L"InstallLocation", &install_location, NULL);
+
+	if (_r_obj_isstringempty (display_version))
+	{
+		status = _r_reg_queryulong (hkey, L"VersionMajor", &value);
+		status = _r_reg_queryulong (hkey, L"VersionMinor", &version);
+
+		_r_obj_movereference ((PVOID_PTR)&display_version, _r_format_string (L"%d.%d", value, version));
+	}
 
 	context = _r_obj_allocate (sizeof (ITEM_CONTEXT), &_app_dereferencecontext);
 
 	context->key_path = _r_format_string (L"%s\\%s", key_path, name->buffer);
 	context->hroot = hroot;
-	context->name = display_name;
+	context->name = display_name ? display_name : _r_obj_reference (name);
 	context->version = display_version;
 	context->display_icon = display_icon;
 	context->install_location = install_location;
@@ -531,6 +533,16 @@ VOID _app_gettooltipbylparam (
 	if (ptr_item->key_path)
 	{
 		_r_obj_appendstringbuilder (&sb, SZ_TAB);
+
+		if (ptr_item->hroot == HKEY_CURRENT_USER)
+		{
+			_r_obj_appendstringbuilder (&sb, L"HKEY_CURRENT_USER\\");
+		}
+		else if (ptr_item->hroot == HKEY_LOCAL_MACHINE)
+		{
+			_r_obj_appendstringbuilder (&sb, L"HKEY_LOCAL_MACHINE\\");
+		}
+
 		_r_obj_appendstringbuilder2 (&sb, &ptr_item->key_path->sr);
 		_r_obj_appendstringbuilder (&sb, SZ_CRLF);
 	}
@@ -552,7 +564,7 @@ VOID _app_refreshstatus (
 	_In_ HWND hwnd
 )
 {
-	_r_status_settextformat (hwnd, IDC_STATUSBAR, 0, L"Total items %d", _r_listview_getitemcount (hwnd, IDC_LISTVIEW));
+	_r_status_settextformat (hwnd, IDC_STATUSBAR, 0, L"%s %d", _r_locale_getstring (IDS_STATUS_TOTAL), _r_listview_getitemcount (hwnd, IDC_LISTVIEW));
 }
 
 VOID _app_resizecolumns (
@@ -568,11 +580,11 @@ VOID _app_resizecolumns (
 VOID _app_scansubkeys (
 	_In_ HWND hwnd,
 	_In_ HANDLE hroot,
-	_In_ LPWSTR key_path
+	_In_ LPCWSTR key_path
 )
 {
-	HANDLE hsubkey;
-	HANDLE hkey;
+	HANDLE hkey, hsubkey;
+	WCHAR buffer[0x100];
 	PR_STRING name;
 	LONG64 timestamp;
 	ULONG index = 0;
@@ -590,7 +602,9 @@ VOID _app_scansubkeys (
 			if (status != STATUS_SUCCESS)
 				break;
 
-			status = _r_reg_openkey (&hsubkey, hkey, name->buffer, 0, KEY_READ);
+			_r_str_printf (buffer, RTL_NUMBER_OF (buffer), L"%s\\%s", key_path, name->buffer);
+
+			status = _r_reg_openkey (&hsubkey, hroot, buffer, 0, KEY_READ);
 
 			if (NT_SUCCESS (status))
 			{
@@ -620,7 +634,7 @@ VOID _app_refreshitems (
 	_app_scansubkeys (hwnd, HKEY_CURRENT_USER, L"SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall");
 	_app_scansubkeys (hwnd, HKEY_LOCAL_MACHINE, L"SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall");
 
-	_app_listviewsort (hwnd, IDC_LISTVIEW, 0, false);
+	_app_listviewsort (hwnd, IDC_LISTVIEW, 0, FALSE);
 }
 
 VOID _app_toolbar_resize (
@@ -629,8 +643,7 @@ VOID _app_toolbar_resize (
 {
 	REBARBANDINFOW rbi;
 	SIZE ideal_size = {0};
-	ULONG button_size;
-	ULONG rebar_count;
+	ULONG button_size, rebar_count;
 	LONG dpi_value;
 
 	_r_toolbar_resize (config.htoolbar, 0);
@@ -692,8 +705,8 @@ VOID _app_window_resize (
 )
 {
 	HDWP hdefer;
-	LONG statusbar_height;
-	LONG rebar_height;
+	HWND hctrl;
+	LONG rebar_height, statusbar_height;
 
 	_app_toolbar_resize (hwnd);
 
@@ -707,27 +720,12 @@ VOID _app_window_resize (
 
 	if (hdefer)
 	{
-		hdefer = DeferWindowPos (
-			hdefer,
-			config.hrebar,
-			NULL,
-			0,
-			0,
-			rect->right,
-			rebar_height,
-			SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOOWNERZORDER
-		);
+		hdefer = DeferWindowPos (hdefer, config.hrebar, NULL, 0, 0, rect->right, rebar_height, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
 
-		hdefer = DeferWindowPos (
-			hdefer,
-			GetDlgItem (hwnd, IDC_LISTVIEW),
-			NULL,
-			0,
-			rebar_height,
-			rect->right,
-			rect->bottom - rebar_height - statusbar_height,
-			SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOOWNERZORDER
-		);
+		hctrl = GetDlgItem (hwnd, IDC_LISTVIEW);
+
+		if (hctrl)
+			hdefer = DeferWindowPos (hdefer, hctrl, NULL, 0, rebar_height, rect->right, rect->bottom - rebar_height - statusbar_height, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
 
 		EndDeferWindowPos (hdefer);
 	}
@@ -737,18 +735,11 @@ VOID _app_toolbar_init (
 	_In_ HWND hwnd
 )
 {
-	ULONG images_id[] = {
-		IDP_DELETE,
-		IDP_REFRESH,
-		IDP_DONATE,
-	};
-
+	ULONG images_id[] = {IDP_DELETE, IDP_REFRESH, IDP_DONATE};
 	NONCLIENTMETRICS ncm = {0};
 	HBITMAP hbitmap;
 	HICON hicon;
-	ULONG button_size;
-	ULONG dpi_value;
-	ULONG width;
+	ULONG button_size, dpi_value, width;
 	NTSTATUS status;
 
 	config.hrebar = GetDlgItem (hwnd, IDC_REBAR);
@@ -819,19 +810,14 @@ VOID _app_toolbar_init (
 		_r_toolbar_setimagelist (config.htoolbar, 0, config.himg_toolbar);
 
 		_r_toolbar_addbutton (config.hrebar, IDC_TOOLBAR, IDM_UNINSTALL, BTNS_BUTTON | BTNS_AUTOSIZE, NULL, TBSTATE_ENABLED, 0);
-
 		_r_toolbar_addseparator (config.hrebar, IDC_TOOLBAR);
-
 		_r_toolbar_addbutton (config.hrebar, IDC_TOOLBAR, IDM_REFRESH, BTNS_BUTTON | BTNS_AUTOSIZE, NULL, TBSTATE_ENABLED, 1);
-
 		_r_toolbar_addseparator (config.hrebar, IDC_TOOLBAR);
-
 		_r_toolbar_addbutton (config.hrebar, IDC_TOOLBAR, IDM_DONATE, BTNS_BUTTON | BTNS_AUTOSIZE, NULL, TBSTATE_ENABLED, 2);
 
 		if (!_r_sys_iselevated ())
 		{
 			_r_toolbar_addseparator (config.hrebar, IDC_TOOLBAR);
-
 			_r_toolbar_addbutton (config.hrebar, IDC_TOOLBAR, IDM_RUNASADMIN, BTNS_BUTTON | BTNS_AUTOSIZE, NULL, TBSTATE_ENABLED, 3);
 		}
 
@@ -876,8 +862,7 @@ VOID _app_initialize (
 	R_STRINGREF msiexec_sr = PR_STRINGREF_INIT (L"msiexec.exe");
 	PR_STRING path;
 	HICON hicon;
-	LONG dpi_value;
-	LONG icon_size;
+	LONG dpi_value, icon_size;
 	NTSTATUS status;
 
 	_r_app_sethwnd (hwnd); // HACK!!!
@@ -958,9 +943,7 @@ INT_PTR CALLBACK DlgProc (
 
 		case RM_INITIALIZE:
 		{
-			HMENU hmenu;
-
-			hmenu = GetMenu (hwnd);
+			HMENU hmenu = GetMenu (hwnd);
 
 			if (hmenu)
 			{
@@ -979,9 +962,7 @@ INT_PTR CALLBACK DlgProc (
 		case RM_LOCALIZE:
 		{
 			// localize menu
-			HMENU hmenu;
-
-			hmenu = GetMenu (hwnd);
+			HMENU hmenu = GetMenu (hwnd);
 
 			if (hmenu)
 			{
@@ -1027,14 +1008,11 @@ INT_PTR CALLBACK DlgProc (
 		case WM_SIZE:
 		{
 			RECT rect;
-			LONG dpi_value;
 
 			if (!GetClientRect (hwnd, &rect))
 				break;
 
-			dpi_value = _r_dc_getwindowdpi (hwnd);
-
-			_app_window_resize (hwnd, &rect, dpi_value);
+			_app_window_resize (hwnd, &rect, _r_dc_getwindowdpi (hwnd));
 
 			break;
 		}
@@ -1053,27 +1031,21 @@ INT_PTR CALLBACK DlgProc (
 
 		case WM_NOTIFY:
 		{
-			LPNMHDR nmlp;
-
-			nmlp = (LPNMHDR)lparam;
+			LPNMHDR nmlp = (LPNMHDR)lparam;
 
 			switch (nmlp->code)
 			{
 				case NM_RCLICK:
 				{
-					LPNMITEMACTIVATE lpnmlv;
+					LPNMITEMACTIVATE lpnmlv = (LPNMITEMACTIVATE)lparam;
 					PITEM_CONTEXT context;
-					HMENU hsubmenu;
-					HMENU hmenu;
-					INT command_id;
-
-					lpnmlv = (LPNMITEMACTIVATE)lparam;
+					HMENU hmenu, hsubmenu;
 
 					if (lpnmlv->hdr.idFrom != IDC_LISTVIEW || lpnmlv->iItem == INT_ERROR)
 						break;
 
 					// localize
-					hmenu = LoadMenuW (NULL, MAKEINTRESOURCEW (IDM_LISTVIEW));
+					hmenu = LoadMenuW (_r_sys_getimagebase (), MAKEINTRESOURCEW (IDM_LISTVIEW));
 
 					if (!hmenu)
 						break;
@@ -1093,11 +1065,8 @@ INT_PTR CALLBACK DlgProc (
 
 						if (context)
 						{
-							if (context->hroot == HKEY_LOCAL_MACHINE)
-							{
-								if (config.hbitmap_uac)
-									_r_menu_setitembitmap (hsubmenu, IDM_DELETE, FALSE, config.hbitmap_uac);
-							}
+							if (context->hroot == HKEY_LOCAL_MACHINE && config.hbitmap_uac)
+								_r_menu_setitembitmap (hsubmenu, IDM_DELETE, FALSE, config.hbitmap_uac);
 
 							if (_r_obj_isstringempty (context->install_location))
 								_r_menu_enableitem (hsubmenu, IDM_EXPLORE, FALSE, FALSE);
@@ -1106,10 +1075,7 @@ INT_PTR CALLBACK DlgProc (
 						if (config.hbitmap_uac)
 							_r_menu_setitembitmap (hsubmenu, IDM_EXPLORE_REGISTRY, FALSE, config.hbitmap_uac);
 
-						command_id = _r_menu_popup (hsubmenu, hwnd, NULL, FALSE);
-
-						if (command_id)
-							_r_wnd_sendcommand (hwnd, command_id, (LPARAM)lpnmlv->iSubItem);
+						_r_menu_popup (hsubmenu, hwnd, NULL, (LPARAM)lpnmlv->iSubItem);
 					}
 
 					DestroyMenu (hmenu);
@@ -1119,13 +1085,11 @@ INT_PTR CALLBACK DlgProc (
 
 				case NM_CUSTOMDRAW:
 				{
-					LPNMLVCUSTOMDRAW lpnmlv;
+					LPNMLVCUSTOMDRAW lpnmlv = (LPNMLVCUSTOMDRAW)lparam;
 					LONG_PTR result = CDRF_DODEFAULT;
 
 					if (nmlp->idFrom != IDC_LISTVIEW)
 						break;
-
-					lpnmlv = (LPNMLVCUSTOMDRAW)lparam;
 
 					switch (lpnmlv->nmcd.dwDrawStage)
 					{
@@ -1184,10 +1148,8 @@ INT_PTR CALLBACK DlgProc (
 
 				case LVN_GETINFOTIP:
 				{
-					LPNMLVGETINFOTIPW lpnmlv;
+					LPNMLVGETINFOTIPW lpnmlv = (LPNMLVGETINFOTIPW)lparam;
 					PITEM_CONTEXT ptr_item;
-
-					lpnmlv = (LPNMLVGETINFOTIPW)lparam;
 
 					if (lpnmlv->hdr.idFrom != IDC_LISTVIEW || lpnmlv->iItem == INT_ERROR)
 						break;
@@ -1202,9 +1164,7 @@ INT_PTR CALLBACK DlgProc (
 
 				case NM_DBLCLK:
 				{
-					LPNMITEMACTIVATE lpnmlv;
-
-					lpnmlv = (LPNMITEMACTIVATE)lparam;
+					LPNMITEMACTIVATE lpnmlv = (LPNMITEMACTIVATE)lparam;
 
 					if (lpnmlv->iItem == INT_ERROR)
 						break;
@@ -1216,9 +1176,7 @@ INT_PTR CALLBACK DlgProc (
 
 				case LVN_COLUMNCLICK:
 				{
-					LPNMLISTVIEW lpnmlv;
-
-					lpnmlv = (LPNMLISTVIEW)lparam;
+					LPNMLISTVIEW lpnmlv = (LPNMLISTVIEW)lparam;
 
 					if (lpnmlv->hdr.idFrom != IDC_LISTVIEW || lpnmlv->iItem == INT_ERROR)
 						break;
@@ -1237,9 +1195,7 @@ INT_PTR CALLBACK DlgProc (
 
 				case LVN_DELETEITEM:
 				{
-					LPNMLISTVIEW lpnmlv;
-
-					lpnmlv = (LPNMLISTVIEW)lparam;
+					LPNMLISTVIEW lpnmlv = (LPNMLISTVIEW)lparam;
 
 					if (lpnmlv->lParam)
 						_r_obj_dereference ((PVOID)lpnmlv->lParam);
@@ -1252,11 +1208,7 @@ INT_PTR CALLBACK DlgProc (
 
 				case LVN_GETDISPINFO:
 				{
-					LPNMLVDISPINFOW lpnmlv;
-					INT listview_id;
-
-					lpnmlv = (LPNMLVDISPINFOW)lparam;
-					listview_id = (INT)(INT_PTR)lpnmlv->hdr.idFrom;
+					LPNMLVDISPINFOW lpnmlv = (LPNMLVDISPINFOW)lparam;
 
 					if (!lpnmlv->item.lParam)
 						break;
@@ -1305,8 +1257,7 @@ INT_PTR CALLBACK DlgProc (
 			}
 			else if (notify_code == 0 && ctrl_id >= IDX_LANGUAGE && ctrl_id <= IDX_LANGUAGE + (INT)(INT_PTR)_r_locale_getcount () + 1)
 			{
-				HMENU hsubmenu;
-				HMENU hmenu;
+				HMENU hmenu, hsubmenu;
 
 				hmenu = GetMenu (hwnd);
 
@@ -1539,8 +1490,7 @@ INT_PTR CALLBACK DlgProc (
 				{
 					R_STRINGBUILDER sb;
 					PR_STRING string;
-					INT column_id;
-					INT item_id = INT_ERROR;
+					INT column_id, item_id = INT_ERROR;
 
 					column_id = (INT)lparam;
 

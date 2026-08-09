@@ -79,7 +79,7 @@ typedef struct _ITEM_CONTEXT
 	PR_STRING name;
 	HANDLE hroot;
 	LONG64 timestamp;
-	LONG icon_id;
+	INT icon_id;
 	INSTALLER_TYPE type;
 	INSTALLER installer;
 	BOOLEAN is_hidden;
